@@ -1,6 +1,9 @@
 // src/App.jsx
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import Layout from "./components/Layout";
+import AdminHeader from "./Headers/AdminHeader";
+import HomeHeader from "./Headers/Homeheader";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
@@ -31,8 +34,6 @@ const [currentEmployer,setCurrentEmployer] = useState(null);
   const [employerId, setEmployerId] = useState(null);
   const [jobSeeker, setJobSeeker] = useState(null);
 
-  
-
   // when app loads, try to restore user from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -45,7 +46,6 @@ const [currentEmployer,setCurrentEmployer] = useState(null);
     }
   }, []);
 
- 
 const handleEmployeerProfileSuccess =(employerData) =>{
 setEmployerId(employerData);
 console.log(employerData);
@@ -101,7 +101,7 @@ localStorage.setItem("employerId", JSON.stringify(employerData));
       return <JobDetailPage job = {currentJob} setCurrentPage={setCurrentPage}/>;
     }
     if(currentPage === "jobseekerDashboard")
-    return <JobSeekerDashboard user={user} setCurrentPage={setCurrentPage} setCurrentJob={setCurrentJob} />;
+    return <JobSeekerDashboard user={user} jobSeeker = {jobSeeker} setCurrentPage={setCurrentPage} setCurrentJob={setCurrentJob} />;
 
     if(currentPage === "applyJob"){
       return <ApplyJobPage  job={currentJob} jobSeeker={jobSeeker} setCurrentPage={setCurrentPage} />

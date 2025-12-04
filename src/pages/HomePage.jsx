@@ -1,29 +1,31 @@
 import React from "react";
 import "../App.css";
-
+import HomeImage from "../assets/homeImage.webp";
 function HomePage({ onNavigate }) {
   return (
     <div className="main-container">
-      <section className="hero">
-        <h1 className="hero-title">Welcome to Job Portal</h1>
-        <p className="hero-subtitle">
-          A smart job platform for job seekers, employers, and admins — designed
-          for fast hiring, tailored matches, and a clean experience.
+      <section className="hero py-5">
+        <div className="container-lg">
+          <div className="row align-items-center">
+           {/*TEXT -LEFT on md+ */}
+           <div className="col-md-6 order-2 order-md-1">
+        <h1 className="hero-title display-5 fw-bold mb-3">      
+           Welcome to Job Portal    
+        </h1>
+        <p className="hero-subtitle text-muted fs-5 mb-4">
+          "   The future depends on what you do today.  "
         </p>
-
         <div className="hero-actions">
           <button
-            className="btn btn-primary"
-            onClick={() => onNavigate("jobs")}
+            className="btn btn-primary-lg me-2"
+            onClick={() => onNavigate?.("/jobs")}
           >
             Browse Jobs
           </button>
-          <button
-            className="btn btn-outline"
-            onClick={() => onNavigate("register")}
-          >
-            Get Started
-          </button>
+          </div>
+          </div>
+         
+          </div>
         </div>
       </section>
 

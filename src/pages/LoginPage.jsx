@@ -168,6 +168,7 @@ else if(data.approvalStatus === "REJECTED"){
 
 
         setUser(user);
+        localStorage.setItem("user", JSON.stringify(user));
    
 
       if (!user || !user.userType) {

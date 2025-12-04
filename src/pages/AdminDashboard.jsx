@@ -60,19 +60,19 @@ return (
     <div className="metrics-grid">
       <div className="metric-card">
         <div className="metric-label">Total Users</div>
-        <div className="metric-value">120</div>
+        <div className="metric-value">0</div>
       </div>
       <div className="metric-card">
         <div className="metric-label">Active Employers</div>
-        <div className="metric-value">18</div>
+        <div className="metric-value">0</div>
       </div>
       <div className="metric-card">
         <div className="metric-label">Jobs Posted</div>
-        <div className="metric-value">54</div>
+        <div className="metric-value">0</div>
       </div>
       <div className="metric-card">
         <div className="metric-label">Payments (₹)</div>
-        <div className="metric-value">75K</div>
+        <div className="metric-value">0</div>
       </div>
     </div>
 

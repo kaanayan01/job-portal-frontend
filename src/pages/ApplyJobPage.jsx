@@ -48,6 +48,8 @@ console.log('------------'+jobId);
         goToJobSeeker();
         return;
       }
+      console.log(json.message);
+      alert("Cannot apply to the same job twice");
 
      
     } catch (err) {
