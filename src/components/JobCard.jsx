@@ -1,29 +1,29 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../App.css";
 
-function JobCard({ job, onApply }) {
+function JobCard() {
+  const navigate = useNavigate();
+
+  const handleApply = () => {
+    navigate(`/apply`);
+  };
+
   return (
     <article className="card">
-      <h3 className="card-title">{job.title}</h3>
-      <p className="card-meta">
-        {job.company} · {job.location}
-      </p>
+      <h3 className="card-title">Job Title</h3>
+      <p className="card-meta">Company · Location</p>
       <div className="card-tags">
-        {job.skills.map((s) => (
-          <span key={s} className="tag">
-            {s}
-          </span>
-        ))}
+        <span className="tag">Skill</span>
       </div>
       <p style={{ fontSize: "0.85rem", marginTop: "8px" }}>
-        {job.description}
+        Job Description
       </p>
-
       <div className="card-footer">
         <span style={{ fontSize: "0.85rem", fontWeight: 500 }}>
-          ₹ {job.salaryRange}
+          ₹ Salary Range
         </span>
-        <button className="btn btn-primary" onClick={() => onApply(job)}>
+        <button className="btn btn-primary" onClick={handleApply}>
           Apply
         </button>
       </div>

@@ -1,9 +1,12 @@
-
 import React, { useEffect, useState } from "react";
 import "../App.css";
 import { apiFetch, getToken } from "../api";
+import { useReduxJobSeeker, useReduxUser } from "../hooks/useReduxUser";
+import { useNavigate } from "react-router-dom";
 
-export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob, jobSeeker }) {
+export default function JobSeekerDashboard() {
+  const navigate = useNavigate();
+  const jobSeeker = useReduxJobSeeker();
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState("");
@@ -11,10 +14,7 @@ export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob
   const [pageSize, setPageSize] = useState(10);
   const [total, setTotal] = useState(0);
 
-
-
-  const gotoJobDetailPage = () => setCurrentPage("jobDetail");
-
+  const gotoJobDetailPage = () => navigate("/job-detail");
 
   const fetchJobs = async () => {
     try {
@@ -35,11 +35,9 @@ export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob
         return;
       }
 
-      if (response.status === 200) {
-        const json = await response.json();
-        setJobs(json.data.jobPosts || []);
-        setTotal(json.data.totalRecords || 0);
-      }
+      const data = await response.json();
+      setJobs(data.jobs);
+      setTotal(data.total);
     } catch (error) {
       console.error("Error fetching jobs:", error);
     } finally {
@@ -47,8 +45,8 @@ export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob
     }
   };
 
-  const fetchApplications = async() => {
-    console.log("appliv", jobSeeker, jobSeeker.job_seeker_id);
+  const fetchApplications = async () => {
+   
     try {
       setLoading(true);
       const token = getToken();
@@ -63,7 +61,10 @@ export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob
       });
 
       if (response.status !== "success" && response.status !== 200) {
-        console.log("---------------hshsjs------------",response.message || "Failed to fetch applications");
+        console.log(
+          "---------------hshsjs------------",
+          response.message || "Failed to fetch applications"
+        );
         alert(response.message || "Failed to fetch applications");
         return;
       }
@@ -77,7 +78,7 @@ export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     fetchJobs();
@@ -85,8 +86,11 @@ export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob
   }, [pageNumber, pageSize]);
 
   const handleRowClick = (job) => {
+    console.log("Selected Job:", job);
+     localStorage.setItem("selectedJob", JSON.stringify(job));
     gotoJobDetailPage();
-    setCurrentJob(job);
+    
+   
   };
 
   const handleSearchChange = (e) => setSearchText(e.target.value);
@@ -181,12 +185,12 @@ export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob
             <div style={{ marginTop: "20px", textAlign: "center" }}>
               <button
                 onClick={handlePrevPage}
-                hidden                ={pageNumber === 0}
+                hidden={pageNumber === 0}
                 style={{
                   backgroundColor: "#007bff",
                   color: "white",
                   border: "none",
-                                   padding: "8px 16px",
+                  padding: "8px 16px",
                   borderRadius: "4px",
                   cursor: "pointer",
                   marginLeft: "10px",
@@ -194,15 +198,17 @@ export default function JobSeekerDashboard({ user, setCurrentPage, setCurrentJob
               >
                 Previous
               </button>
-              <span>Page {pageNumber + 1 }</span>
+              <span>Page {pageNumber + 1}</span>
               <button
                 onClick={handleNextPage}
-                hidden = {((pageNumber + 1)*pageSize) >= total  }
+                hidden={
+                  (pageNumber + 1) * pageSize >= total
+                }
                 style={{
                   backgroundColor: "#007bff",
                   color: "white",
                   border: "none",
-                                   padding: "8px 16px",
+                  padding: "8px 16px",
                   borderRadius: "4px",
                   cursor: "pointer",
                   marginLeft: "10px",

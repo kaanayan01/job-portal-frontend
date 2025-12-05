@@ -125,7 +125,7 @@ export default function CompanyCompleteProfile({ user, setCurrentPage,employerID
             ></textarea>
           </div>
 
-          {/* Logo Upload */}
+          {/* Logo Upload
           <div className="form-row">
             <label className="form-label">Company Logo</label>
             <input
@@ -135,7 +135,7 @@ export default function CompanyCompleteProfile({ user, setCurrentPage,employerID
               accept="image/*"
               onChange={handleChange}
             />
-          </div>
+          </div> */}
 
           {/* Website */}
           <div className="form-row">

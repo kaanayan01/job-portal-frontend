@@ -1,14 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
-import approutes from './approutes';
+import { BrowserRouter } from 'react-router-dom';
+import AppRoutes from './approutes';
+import { AuthProvider } from './contexts/AuthContext';
+import { Provider } from 'react-redux';
+import store from './store/store';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    {approutes} 
+    <Provider store={store}>
+      <AuthProvider>
+        <BrowserRouter>
+          {/* Your existing routes rendering */}
+          <AppRoutes/>
+        </BrowserRouter>
+      </AuthProvider>
+    </Provider>
   </React.StrictMode>
 );
 

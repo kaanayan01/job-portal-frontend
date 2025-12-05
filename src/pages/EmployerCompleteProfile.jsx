@@ -2,9 +2,17 @@
 import React, { useState } from "react";
 import { apiFetch } from "../api";
 import "../App.css";
+import { useReduxUser } from "../hooks/useReduxUser";
+import { useDispatch } from "react-redux";
+import { setEmployer as setEmployerAction } from "../../src/store/employerSlice";
 
-export default function EmployerCompanyProfile({ user, setCurrentPage }) {
-  const goToPendingScreen = () => setCurrentPage("pendingScreen");
+export default function EmployerCompanyProfile({   }) {
+  const user = useReduxUser();
+  const goToPendingScreen = () => {
+    alert("Profile submitted! Redirecting to pending approval screen.");
+    window.location.href = "/employer/pending";
+  };
+  const dispatch = useDispatch();
 
   // Combined form state
   const [form, setForm] = useState({
@@ -39,10 +47,6 @@ export default function EmployerCompanyProfile({ user, setCurrentPage }) {
       // Step 1: Save Employer Profile
       const employerRes = await apiFetch("/api/employers", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
         body: JSON.stringify({
           userId: form.userId,
           contactEmail: form.contactEmail,
@@ -53,58 +57,59 @@ export default function EmployerCompanyProfile({ user, setCurrentPage }) {
       
       const employerJson = await employerRes.json();
       console.log("Employer Profile Response:", employerJson);
+      console.log("Employer Response Status:", employerRes.status);
 
-      if (employerJson.status !== 200) {
-        alert("Failed to save Employer Profile");
+      if (employerRes.status !== 200 && employerRes.status !== 201) {
+        console.error("Employer Profile submission failed:", employerJson);
+        alert("Failed to save Employer Profile: " + (employerJson.message || "Unknown error"));
         setLoading(false);
         return;
       }
 
+      if (!employerJson.data || !employerJson.data.employerId) {
+        console.error("No employerId returned from API");
+        alert("Failed to get employer ID from server");
+        setLoading(false);
+        return;
+      }
+      dispatchEvent(setEmployerAction(employerJson.data));
       const employerId = employerJson.data.employerId;
 
-      // Step 2: Save Company Profile
-      const formData = new FormData();
-      const userId= form.userId;
-     
-      const companyName= form.company_name;
-      const industry=  form.industry;
-      const address =form.address;
-      const description = form.description;
-      const website = form.website;
-      
-      // if (form.logo) {
-      //   formData.append("logo", form.logo);
-      // }
+      // Step 2: Save Company Profile (JSON format)
+      const companyProfileData = {
+        userId: form.userId,
+        employerId: employerId,
+        companyName: form.company_name,
+        industry: form.industry,
+        address: form.address,
+        description: form.description,
+        website: form.website,
+      };
 
+      console.log("Sending company profile with employerId:", employerId);
+      
       const companyRes = await apiFetch("/api/company-profiles", {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "application/json",
         },
-        body: 
-        JSON.stringify({
-            userId,
-            employerId,
-            companyName,
-               industry,
-            address,
-            description,
-            website,
-          })
-        ,
+        body: JSON.stringify(companyProfileData),
       });
 
       const companyJson = await companyRes.json();
-      console.log("Company Profile Response:", companyJson);
+      console.log("Company Profile Response JSON:", companyJson);
+      console.log("Company Profile Response Status:", companyRes.status);
 
-      if (companyJson.status === 200) {
+      if (companyRes.status === 200 || companyRes.status === 201 || companyJson.status === "success") {
+        console.log("Company profile saved successfully!");
         alert("Profile completed successfully!");
         goToPendingScreen();
         setLoading(false);
         return;
       }
 
-      alert("Failed to save Company Profile");
+      console.error("Company Profile submission failed. Status:", companyRes.status, "Response:", companyJson);
+      alert("Failed to save Company Profile: " + (companyJson.message || "Status: " + companyRes.status));
       return;
     } catch (err) {
       console.error("Error submitting profiles:", err);
@@ -202,7 +207,7 @@ export default function EmployerCompanyProfile({ user, setCurrentPage }) {
               required
             ></textarea>
           </div>
-
+{/* 
           <div className="form-row">
             <label className="form-label">Company Logo</label>
             <input
@@ -212,7 +217,7 @@ export default function EmployerCompanyProfile({ user, setCurrentPage }) {
               accept="image/*"
               onChange={handleChange}
             />
-          </div>
+          </div> */}
 
           <div className="form-row">
             <label className="form-label">Website</label>

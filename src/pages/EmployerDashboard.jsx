@@ -1,15 +1,24 @@
-
 import React from "react";
 import "../App.css";
+import { useReduxUser } from "../hooks/useReduxUser";
+import { useNavigate } from "react-router-dom";
 
 const dummyJobs = [
   { title: "React Developer", status: "OPEN", applicants: 12 },
   { title: "Java Backend Engineer", status: "CLOSED", applicants: 9 },
 ];
 
-function EmployerDashboard({ subscriptionPlan, setCurrentPage }) {
-  const isPremium = subscriptionPlan === "PREMIUM";
-  const goToAddJob = () => setCurrentPage("AddJob");
+function EmployerDashboard() {
+  
+  const navigate = useNavigate();
+  const reduxUser = useReduxUser();
+  const isPremium = reduxUser && reduxUser.subscriptionPlan === "PREMIUM";
+  
+  if (!reduxUser) {
+    return <div className="main-container"><p>Error: User data not found.</p></div>;
+  }
+  
+  const goToAddJob = () => navigate("/employer/create-job");
   return (
     <div className="main-container">
       <h2>Employer Dashboard</h2>
@@ -18,7 +27,7 @@ function EmployerDashboard({ subscriptionPlan, setCurrentPage }) {
       <div style={{ marginBottom: "20px" }}>
         <button
           className="primary-btn"
-          onClick={() => goToAddJob()}
+          onClick={goToAddJob}
         >
           Add Job
         </button>

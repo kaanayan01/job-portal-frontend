@@ -1,6 +1,6 @@
 // src/api.js
 
-const API_BASE_URL = "http://localhost:9192";
+export const API_BASE_URL = "http://localhost:9192";
 
 export function setToken(token) {
   localStorage.setItem("jwtToken", token);
@@ -31,7 +31,9 @@ export async function apiFetch(path, options = {}) {
 
   const response = await fetch(API_BASE_URL + path, {
     ...options,
-    headers
+    headers,
+    credentials: "include",
+    mode: "cors"
   });
 
   return response;

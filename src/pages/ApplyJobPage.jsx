@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { apiFetch } from "../api";
 import "../App.css";
+import { useReduxJobSeeker } from "../hooks/useReduxUser";
 
-function ApplyJobPage({jobSeeker,job, setCurrentPage}) {
+function ApplyJobPage(){
+    const jobSeekerBody = useReduxJobSeeker() ;
+    const jobSeeker = jobSeekerBody?.jobSeeker || {};
+    console.log("jobSeeker in ApplyJobPage:", jobSeeker);
+    const job = JSON.parse(localStorage.getItem("selectedJob"));
     useEffect(() => {
       console.log(job);
       console.log(jobSeeker);
       }, []);
-  const goToJobSeeker = () => setCurrentPage("jobseekerDashboard");
+ 
   const [form, setForm] = useState({
-
-   
     coverletter: "",
 
   });
@@ -45,7 +48,7 @@ console.log('------------'+jobId);
       console.log("Register response:", json);
 
       if ( json.status === 200) {
-        goToJobSeeker();
+        alert("Applied Successfully");
         return;
       }
       console.log(json.message);
@@ -75,7 +78,7 @@ console.log('------------'+jobId);
 
   return (
     <div className="main-container">
-      <h2>My Profile</h2>
+      <h2>Apply Job</h2>
 
       <div className="form-shell">
         <form className="form" onSubmit={handleSubmit}>

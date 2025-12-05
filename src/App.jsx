@@ -1,6 +1,7 @@
 // src/App.jsx
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import { useDispatch, useSelector } from "react-redux";
 import Layout from "./components/Layout";
 import AdminHeader from "./Headers/AdminHeader";
 import HomeHeader from "./Headers/Homeheader";
@@ -25,14 +26,25 @@ import ApplyJobPage from "./pages/ApplyJobPage";
 
 
 function App() {
+  // Get user from Redux instead of local state
+  const reduxUser = useSelector((state) => state.user.user);
+  const dispatch = useDispatch();
+  
   // which screen should be shown when NO user is logged in
   const [currentPage, setCurrentPage] = useState("home");
-const [currentEmployer,setCurrentEmployer] = useState(null);
-  // logged-in user (ADMIN / EMPLOYER / JOB_SEEKER)
+  const [currentEmployer, setCurrentEmployer] = useState(null);
+  // Keep local state for backward compatibility but prefer Redux
   const [user, setUser] = useState(null);
   const [currentJob, setCurrentJob] = useState(null);
   const [employerId, setEmployerId] = useState(null);
   const [jobSeeker, setJobSeeker] = useState(null);
+
+  // Sync Redux user to local state
+  useEffect(() => {
+    if (reduxUser) {
+      setUser(reduxUser);
+    }
+  }, [reduxUser]);
 
   // when app loads, try to restore user from localStorage
   useEffect(() => {
@@ -49,6 +61,7 @@ const [currentEmployer,setCurrentEmployer] = useState(null);
 const handleEmployeerProfileSuccess =(employerData) =>{
 setEmployerId(employerData);
 console.log(employerData);
+dispatch(setEmployerAction(employerData));
 localStorage.setItem("employerId", JSON.stringify(employerData));
 }
 
@@ -142,16 +155,11 @@ localStorage.setItem("employerId", JSON.stringify(employerData));
 
   return (
     <div className="app-root">
-      <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        user={user}
-        onLogout={handleLogout}
-      />
+     
 
       <main className="app-main">{renderPage()}</main>
 
-      <Footer />
+     
     </div>
   );
 }

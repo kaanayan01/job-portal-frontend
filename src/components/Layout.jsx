@@ -1,14 +1,5 @@
-import React from "react";
-import Navbar from "./Navbar";// your existing global nav
-
-export default function Layout({ Header, children }) {
-  return (
-    <>
-      <Navbar /> {/* global bar on top — unchanged */}
-      {Header ? <Header /> : null} {/* page-specific header */}
-      <main className="main-container">
-        {children}
-      </main>
-    </>
-  );
-}
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+import Navbar from './Navbar';
+import Footer from './Footer';
+export default function Layout(){ return(<><Navbar/><main className="main-container"><Outlet/></main><Footer/></>); }
