@@ -1,12 +1,20 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useReduxUser } from "../hooks/useReduxUser";
 import { apiFetch, getToken } from "../api";
 import "./JobsPage.css";
 
 function JobsPage() {
   const navigate = useNavigate();
+  const reduxUser = useReduxUser();
   const jobSeeker = useSelector(state => state.jobSeeker?.jobSeeker);
+  const employer = useSelector(state => state.employer?.employer);
+  
+  // Check if user is a job seeker based on userType from Redux user state
+  // This is more reliable on page refresh than checking Redux jobSeeker state
+  const isJobSeeker = reduxUser?.userType === 'JOB_SEEKER';
+  
   const [jobs, setJobs] = useState([]);
   const [appliedJobs, setAppliedJobs] = useState(new Map()); // Changed to Map to store status
   const [savedJobs, setSavedJobs] = useState(new Map()); // Map to store jobId -> savedJobId
@@ -155,12 +163,14 @@ function JobsPage() {
     } else if (activeTab === "saved") {
       console.log("Filtering for saved tab:");
       console.log("  savedJobs Map keys:", Array.from(savedJobs.keys()));
+      console.log("  savedJobs Map size:", savedJobs.size);
       console.log("  jobs count:", jobs.length);
+      if (jobs.length > 0) {
+        console.log("  First job sample:", JSON.stringify(jobs[0]));
+      }
       jobsToFilter = jobs.filter(job => {
         const isSaved = savedJobs.has(job.jobId);
-        if (isSaved) {
-          console.log(`    Job ${job.jobId} (${job.title}) is saved`);
-        }
+        console.log(`    Checking job ${job.jobId} (${job.title}): ${isSaved ? 'SAVED' : 'NOT SAVED'}`);
         return isSaved;
       });
       console.log("  Filtered jobs count:", jobsToFilter.length);
@@ -252,27 +262,25 @@ function JobsPage() {
         const savedJobMap = new Map();
         json.data.forEach((saved, idx) => {
           console.log(`Saved Job ${idx}:`, JSON.stringify(saved));
-          // Extract jobId - try multiple paths
+          console.log(`  Fields available:`, Object.keys(saved));
+          
+          // Extract jobId from the response
+          // The API returns an object with job details
           const jobId = saved.job?.jobId || saved.jobId;
           
-          // For the record ID, we'll use the actual ID from the database
-          // Try all possible field names
-          console.log("  Extracted jobId:", saved);
-          let recordId = saved.savedId ;
+          // Extract the saved record ID - this is the ID of the saved job record itself
+          // Try multiple field names that might be used
+          const recordId = saved.id || saved.savedJobId || saved.savedId || saved.saveId;
           
-          // If we still don't have a recordId, use jobId as fallback
-          if (!recordId) {
-            recordId = jobId;
-          }
-          
-          console.log(`  -> jobId: ${jobId}, recordId: ${recordId}`);
+          console.log(`  -> extracted jobId: ${jobId} (type: ${typeof jobId}), recordId: ${recordId}`);
           
           if (jobId) {
             savedJobMap.set(jobId, recordId);
+            console.log(`  -> Added to map: key=${jobId}, value=${recordId}`);
           }
         });
         setSavedJobs(savedJobMap);
-        console.log("Final Saved Jobs Map:", savedJobMap);
+        console.log("Final Saved Jobs Map:", Array.from(savedJobMap.entries()));
       }
     } catch (err) {
       console.error("Error fetching saved jobs:", err);
@@ -413,6 +421,10 @@ function JobsPage() {
           }
           
           console.log("Extracted jobs:", jobsData, "Count:", jobsData.length);
+          if (jobsData.length > 0) {
+            console.log("First job structure:", JSON.stringify(jobsData[0]));
+            console.log("First job ID value:", jobsData[0].jobId, "Type:", typeof jobsData[0].jobId);
+          }
           setJobs(jobsData);
           // Applied jobs will be fetched by separate useEffect
         } else {
@@ -452,36 +464,38 @@ function JobsPage() {
         <p className="jobs-count">{filteredJobs.length} positions found</p>
       </div>
 
-      {/* Tabs */}
-      <div className="jobs-tabs">
-        <button
-          className={`tab-btn ${activeTab === "all" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("all");
-            setCurrentPage(1);
-          }}
-        >
-          📋 All Jobs
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "applied" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("applied");
-            setCurrentPage(1);
-          }}
-        >
-          ✓ Applied ({appliedJobs.size})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "saved" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("saved");
-            setCurrentPage(1);
-          }}
-        >
-          ★ Saved ({savedJobs.size})
-        </button>
-      </div>
+      {/* Tabs - Only show for Job Seekers */}
+      {isJobSeeker && (
+        <div className="jobs-tabs">
+          <button
+            className={`tab-btn ${activeTab === "all" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("all");
+              setCurrentPage(1);
+            }}
+          >
+            📋 All Jobs
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "applied" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("applied");
+              setCurrentPage(1);
+            }}
+          >
+            ✓ Applied ({appliedJobs.size})
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "saved" ? "active" : ""}`}
+            onClick={() => {
+              setActiveTab("saved");
+              setCurrentPage(1);
+            }}
+          >
+            ★ Saved ({savedJobs.size})
+          </button>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="search-section">
@@ -564,6 +578,16 @@ function JobsPage() {
                     <button className="apply-btn inactive" disabled title="This job posting is no longer active">
                       ❌ Position Closed
                     </button>
+                  ) : isJobSeeker ? (
+                    <button
+                      className="apply-btn"
+                      onClick={() => {
+                        localStorage.setItem("selectedJob", JSON.stringify(job));
+                        navigate(`/job/${job.jobId}`);
+                      }}
+                    >
+                      View Details
+                    </button>
                   ) : (
                     <button
                       className="apply-btn"
@@ -576,16 +600,19 @@ function JobsPage() {
                     </button>
                   )}
 
-                  <button
-                    className={`save-job-btn ${savedJobs.has(job.jobId) ? "saved" : ""}`}
-                    onClick={() => handleToggleSaveJob(job.jobId)}
-                    disabled={savingJobId === job.jobId}
-                    title={savedJobs.has(job.jobId) ? "Remove from saved jobs" : "Save this job"}
-                  >
-                    {savingJobId === job.jobId ? "..." : savedJobs.has(job.jobId) ? "★ Saved" : "☆ Save"}
-                  </button>
+                  {/* Save button - only for job seekers */}
+                  {isJobSeeker && (
+                    <button
+                      className={`save-job-btn ${savedJobs.has(job.jobId) ? "saved" : ""}`}
+                      onClick={() => handleToggleSaveJob(job.jobId)}
+                      disabled={savingJobId === job.jobId}
+                      title={savedJobs.has(job.jobId) ? "Remove from saved jobs" : "Save this job"}
+                    >
+                      {savingJobId === job.jobId ? "..." : savedJobs.has(job.jobId) ? "★ Saved" : "☆ Save"}
+                    </button>
+                  )}
 
-                  {isPremium && job.status?.toUpperCase() !== 'INACTIVE' && (
+                  {isJobSeeker && isPremium && job.status?.toUpperCase() !== 'INACTIVE' && (
                     <button
                       className="skill-match-btn"
                       onClick={() => handleSkillMatch(job.jobId)}

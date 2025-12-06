@@ -617,3 +617,83 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+
+/* Status Badge Styles */
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.status-inactive {
+  background-color: #fed7d7;
+  color: #742a2a;
+}
+
+.status-closed {
+  background-color: #cbd5e0;
+  color: #2d3748;
+}
+
+/* Application Status Badges */
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-applied {
+  background-color: #dbeafe;
+  color: #0c4a6e;
+}
+
+.status-reviewed {
+  background-color: #ddd6fe;
+  color: #4c1d95;
+}
+
+.status-shortlisted {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.status-selected {
+  background-color: #a7f3d0;
+  color: #064e3b;
+}
+
+.status-rejected {
+  background-color: #fecaca;
+  color: #7c2d12;
+}
+
+/* View Button in Dashboard */
+.view-btn {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.view-btn:hover {
+  background-color: #764ba2;
+  transform: translateY(-2px);
+}
+
+.view-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}

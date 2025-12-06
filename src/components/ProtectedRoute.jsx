@@ -22,7 +22,7 @@ export default function ProtectedRoute({ children, requiredRole }) {
       return employer && employer.employerId;
     }
     if (requiredRole === "admin") {
-      return user && user.role === "admin";
+      return user && user.userType === "ADMIN";
     }
     return false;
   };

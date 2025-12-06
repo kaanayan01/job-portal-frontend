@@ -29,15 +29,14 @@ export default function Navbar(){
      </>}
      {isLoggedIn && reduxUser?.userType == 'JOB_SEEKER' && <>
        <NavLink to="/jobseeker/profile" className={({isActive})=>isActive?'nav-link active profile-btn':'nav-link profile-btn'}>Profile</NavLink>
-       
+       <NavLink to="/jobs" className={({isActive})=>isActive?'nav-link active jobs-btn':'nav-link jobs-btn'}>Jobs</NavLink>
      </>}
 
       {isLoggedIn && reduxUser?.userType == 'EMPLOYER' && <>
        <NavLink to="/employer/profile" className={({isActive})=>isActive?'nav-link active profile-btn':'nav-link profile-btn'}>Profile</NavLink>
-      
+       <NavLink to="/employer/jobs" className={({isActive})=>isActive?'nav-link active jobs-btn':'nav-link jobs-btn'}>Jobs</NavLink>
      </>}
      {isLoggedIn && <>
-      <NavLink to="/jobs" className={({isActive})=>isActive?'nav-link active jobs-btn':'nav-link jobs-btn'}>Jobs</NavLink>
       
       {/* Premium Badge or Upgrade Button */}
       {isPremium ? (

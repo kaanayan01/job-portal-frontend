@@ -72,12 +72,12 @@ export default function AppRoutes() {
         <Route path="payment/:subscriptionId" element={<ProtectedRoute requiredRole="employer"><PremiumCheckRoute><PaymentPage /></PremiumCheckRoute></ProtectedRoute>} />
 
         {/* Admin Routes */}
-        <Route path="admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
-        <Route path="admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
-        <Route path="admin/jobs" element={<ProtectedRoute requiredRole="admin"><AdminJobs /></ProtectedRoute>} />
-        <Route path="admin/payments" element={<ProtectedRoute requiredRole="admin"><AdminPayments /></ProtectedRoute>} />
-        <Route path="admin/reports" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
-        <Route path="admin/company/:employerId" element={<ProtectedRoute requiredRole="admin"><CompanyDetailPage /></ProtectedRoute>} />
+        <Route path="admin/dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="admin/users" element={<ProtectedRoute requiredRole="ADMIN"><AdminUsers /></ProtectedRoute>} />
+        <Route path="admin/jobs" element={<ProtectedRoute requiredRole="ADMIN"><AdminJobs /></ProtectedRoute>} />
+        <Route path="admin/payments" element={<ProtectedRoute requiredRole="ADMIN"><AdminPayments /></ProtectedRoute>} />
+        <Route path="admin/reports" element={<ProtectedRoute requiredRole="ADMIN"><AdminReports /></ProtectedRoute>} />
+        <Route path="admin/company/:employerId" element={<ProtectedRoute requiredRole="ADMIN"><CompanyDetailPage /></ProtectedRoute>} />
 
       </Route>
     </Routes>

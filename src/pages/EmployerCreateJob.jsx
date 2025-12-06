@@ -11,7 +11,9 @@ function EmployerCreateJob({ setCurrentPage }) {
    );
    console.log("EmployerCreateJob - reduxUser:", reduxUser);
   const employerId = reduxUser?.employerId  || localStorage.getItem("employerId");
-  
+  if (!employerId) {
+    console.warn("EmployerCreateJob - No employerId found in Redux or localStorage");
+  }
   
   const [job, setJob] = useState({
     title: "",
@@ -27,12 +29,43 @@ function EmployerCreateJob({ setCurrentPage }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [jobCount, setJobCount] = useState(0);
+  const [jobCountLoading, setJobCountLoading] = useState(true);
+  const isPremium = reduxUser?.subscriptionType === 'PREMIUM';
+  const jobLimit = isPremium ? Infinity : 5;
+  const canPostMore = jobCount < jobLimit;
   
   useEffect(() => {
     if (!employerId) {
       setError("Error: Employer ID not found. Please complete your profile first.");
+    } else {
+      // Fetch the count of jobs posted by this employer
+      fetchJobCount();
     }
   }, [employerId]);
+
+  const fetchJobCount = async () => {
+    try {
+      setJobCountLoading(true);
+      const res = await apiFetch(`/api/jobs/employer/${employerId}`);
+      
+      if (res.status === 200) {
+        const json = await res.json();
+        // Count active jobs
+        const activeJobs = Array.isArray(json.data) ? json.data.filter(j => j.status === 'ACTIVE' || !j.status) : [];
+        setJobCount(activeJobs.length);
+        console.log(`Employer ${employerId} has ${activeJobs.length} active jobs. Premium: ${isPremium}`);
+      } else {
+        console.error("Failed to fetch job count");
+        setJobCount(0);
+      }
+    } catch (err) {
+      console.error("Error fetching job count:", err);
+      setJobCount(0);
+    } finally {
+      setJobCountLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,6 +82,12 @@ function EmployerCreateJob({ setCurrentPage }) {
 
     if (!job.title || !job.jobLocation || !job.description) {
       setError("Please fill in all required fields.");
+      return;
+    }
+
+    // Check job limit for non-premium employers
+    if (!isPremium && jobCount >= 5) {
+      setError("You have reached the maximum limit of 5 job postings. Please upgrade to Premium to post more jobs.");
       return;
     }
 
@@ -81,6 +120,8 @@ function EmployerCreateJob({ setCurrentPage }) {
           status: "ACTIVE",
           employerId 
         });
+        // Refresh job count
+        setJobCount(jobCount + 1);
         setTimeout(() => {
           if (setCurrentPage) {
             setCurrentPage("empDashboard");
@@ -107,6 +148,22 @@ function EmployerCreateJob({ setCurrentPage }) {
           <h1>Post a New Job</h1>
           <p>Fill in the details to create a new job listing</p>
         </div>
+
+        {/* Job Limit Info */}
+        {!jobCountLoading && !isPremium && (
+          <div className="job-limit-info">
+            <p>📊 Jobs Posted: <strong>{jobCount}/5</strong></p>
+            {!canPostMore && (
+              <p className="limit-warning">You have reached your job posting limit. <a href="/employer/upgrade">Upgrade to Premium</a> to post more jobs.</p>
+            )}
+          </div>
+        )}
+        
+        {isPremium && (
+          <div className="premium-badge">
+            ✨ Premium Employer - Unlimited Job Postings
+          </div>
+        )}
 
         {error && (
           <div className="alert alert-error">
@@ -232,10 +289,11 @@ function EmployerCreateJob({ setCurrentPage }) {
           <div className="form-actions">
             <button 
               type="submit" 
-              disabled={!employerId || loading}
+              disabled={!employerId || loading || !canPostMore || jobCountLoading}
               className="submit-btn"
+              title={!canPostMore ? "You have reached the maximum of 5 jobs. Upgrade to Premium for unlimited postings." : ""}
             >
-              {loading ? "Creating Job..." : "Create Job Listing"}
+              {loading ? "Creating Job..." : !canPostMore ? "Job Limit Reached (5/5)" : "Create Job Listing"}
             </button>
             <button 
               type="button"
