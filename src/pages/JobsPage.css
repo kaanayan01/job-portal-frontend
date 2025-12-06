@@ -98,12 +98,42 @@
   gap: 12px;
 }
 
+.header-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .job-title {
   font-size: 1.3rem;
   color: #1a1a1a;
   margin: 0;
   font-weight: 700;
   flex: 1;
+}
+
+.job-status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.job-status.active {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.job-status.inactive {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 
 .job-type {
@@ -114,6 +144,67 @@
   font-size: 0.85rem;
   font-weight: 600;
   white-space: nowrap;
+}
+
+/* Applied Badge */
+.applied-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.applied-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid #c3e6cb;
+}
+
+.badge-icon {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.badge-text {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.withdraw-badge-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.withdraw-badge-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.withdraw-badge-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .job-details {
@@ -199,6 +290,283 @@
 
 .apply-btn:active {
   transform: scale(0.98);
+}
+
+.apply-btn.inactive {
+  background: linear-gradient(90deg, #ccc, #aaa);
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.apply-btn.inactive:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Job Actions Container */
+.job-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.job-actions .apply-btn {
+  flex: 1;
+  min-width: 120px;
+  margin-top: 0;
+  width: auto;
+}
+
+/* Skill Match Button */
+.skill-match-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.skill-match-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+.skill-match-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.skill-match-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Skill Match Modal */
+.skill-match-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.skill-match-modal {
+  background: white;
+  border-radius: 12px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #1a1a1a;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+  transition: color 0.2s ease;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+/* Match Percentage Circle */
+.match-percentage {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+.percentage-circle {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+  position: relative;
+}
+
+.percentage-text {
+  font-size: 3rem;
+  color: white;
+  font-weight: bold;
+}
+
+/* Match Details */
+.match-details {
+  margin-bottom: 24px;
+}
+
+.match-details h3 {
+  font-size: 1.1rem;
+  color: #1a1a1a;
+  margin-top: 16px;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.match-details h3:first-child {
+  margin-top: 0;
+}
+
+.match-details p {
+  color: #666;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Match Summary */
+.match-summary {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.summary-text {
+  font-size: 1.05rem;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Skills List */
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.skill-badge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.skill-badge.matched {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.skill-badge.matched:hover {
+  background: #c3e6cb;
+}
+
+.skill-badge.missing {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.skill-badge.missing:hover {
+  background: #f5c6cb;
+}
+
+/* Recommendation */
+.recommendation {
+  background: #e7f3ff;
+  border-left: 4px solid #2f7be2;
+  padding: 16px;
+  border-radius: 6px;
+  margin-top: 20px;
+}
+
+.recommendation h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+  font-size: 1rem;
+}
+
+.recommendation p {
+  margin: 0;
+  color: #333;
+  line-height: 1.5;
+}
+
+/* Modal Footer */
+.modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #f0f0f0;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.close-modal-btn {
+  padding: 10px 24px;
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.close-modal-btn:hover {
+  background: #e0e0e0;
 }
 
 .no-jobs {
@@ -413,6 +781,22 @@
     font-size: 0.95rem;
   }
 
+  .skill-match-btn {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+
+  .job-actions {
+    flex-direction: column;
+  }
+
+  .job-actions .apply-btn,
+  .job-actions .skill-match-btn {
+    width: 100%;
+    flex: none;
+    min-width: unset;
+  }
+
   .pagination {
     flex-direction: column;
     gap: 12px;
@@ -427,6 +811,23 @@
   .pagination-info {
     width: 100%;
     font-size: 0.95rem;
+  }
+
+  .skill-match-modal {
+    max-height: 90vh;
+  }
+
+  .modal-header h2 {
+    font-size: 1.2rem;
+  }
+
+  .percentage-circle {
+    width: 150px;
+    height: 150px;
+  }
+
+  .percentage-text {
+    font-size: 2rem;
   }
 }
 

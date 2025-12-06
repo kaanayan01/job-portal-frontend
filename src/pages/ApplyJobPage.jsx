@@ -1,12 +1,32 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 import "../App.css";
 import { useReduxJobSeeker } from "../hooks/useReduxUser";
 
+// Helper function to get today's application count
+const getTodayApplicationCount = () => {
+  const today = new Date().toDateString();
+  const appData = JSON.parse(localStorage.getItem("dailyApplications") || "{}");
+  return appData[today] || 0;
+};
+
+// Helper function to increment today's application count
+const incrementTodayApplicationCount = () => {
+  const today = new Date().toDateString();
+  const appData = JSON.parse(localStorage.getItem("dailyApplications") || "{}");
+  appData[today] = (appData[today] || 0) + 1;
+  localStorage.setItem("dailyApplications", JSON.stringify(appData));
+};
+
 function ApplyJobPage(){
+    const navigate = useNavigate();
     const jobSeekerBody = useReduxJobSeeker() ;
     const jobSeeker = jobSeekerBody?.jobSeeker || {};
+    const isPremium = useSelector(state => state.jobSeeker?.jobSeeker?.subscriptionType === 'PREMIUM');
     console.log("jobSeeker in ApplyJobPage:", jobSeeker);
+    console.log("isPremium:", isPremium);
     const job = JSON.parse(localStorage.getItem("selectedJob"));
     useEffect(() => {
       console.log(job);
@@ -20,16 +40,23 @@ function ApplyJobPage(){
   const handleSubmit = async (e) => {
     e.preventDefault();
   
+    // Check daily application limit for free users
+    if (!isPremium) {
+      const todayCount = getTodayApplicationCount();
+      if (todayCount >= 5) {
+        alert("❌ You've reached your daily application limit (5 per day). Upgrade to Premium for unlimited applications!");
+        return;
+      }
+    }
 
-  
-console.log("Submit JOb Api Initiated --->");
+    console.log("Submit JOb Api Initiated --->");
     try {
      
-const jobSeekerId= jobSeeker.jobSeekerId;
-const jobId = job.jobId;
+      const jobSeekerId= jobSeeker.jobSeekerId;
+      const jobId = job.jobId;
 
-console.log('------------'+jobSeekerId);
-console.log('------------'+jobId);
+      console.log('------------'+jobSeekerId);
+      console.log('------------'+jobId);
 
       const res = await apiFetch("/api/applications", {
         method: "POST",
@@ -48,7 +75,15 @@ console.log('------------'+jobId);
       console.log("Register response:", json);
 
       if ( json.status === 200) {
-        alert("Applied Successfully");
+        // Increment application count on successful submission
+        if (!isPremium) {
+          incrementTodayApplicationCount();
+          const remaining = 5 - getTodayApplicationCount();
+          alert(`✓ Applied Successfully!\nRemaining applications today: ${remaining}/5`);
+        } else {
+          alert("✓ Applied Successfully!");
+        }
+        navigate("/jobs");
         return;
       }
       console.log(json.message);

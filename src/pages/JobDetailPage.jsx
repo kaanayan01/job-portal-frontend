@@ -1,19 +1,48 @@
-
 import React, { use, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { apiFetch, getToken } from "../api";
 import "./JobDetailPage.css";
 import { useReduxUser } from "../hooks/useReduxUser";
+
 function JobDetailPage() {
   const { jobId } = useParams();
   const navigate = useNavigate();
+  const jobSeeker = useSelector(state => state.jobSeeker?.jobSeeker);
   const [job, setJob] = useState(null);
   const [employer, setEmployer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [isApplied, setIsApplied] = useState(false);
   const user = useReduxUser();
 
   console.log("JobDetailPage - jobId param:", job);
+
+  // Check if already applied to this job
+  const checkIfApplied = async () => {
+    if (!jobSeeker?.jobSeekerId) return;
+
+    try {
+      const token = getToken();
+      const res = await apiFetch(`/api/applications/jobseeker/${jobSeeker.jobSeekerId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.status === 200) {
+        const json = await res.json();
+        if (json.data && Array.isArray(json.data)) {
+          const applied = json.data.some(app => app.job?.jobId === parseInt(jobId) || app.jobId === parseInt(jobId));
+          setIsApplied(applied);
+        }
+      }
+    } catch (err) {
+      console.error("Error checking if applied:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchJobDetails = async () => {
@@ -71,6 +100,13 @@ function JobDetailPage() {
       fetchJobDetails();
     }
   }, [jobId]);
+
+  // Check if applied after job details are loaded
+  useEffect(() => {
+    if (job && jobSeeker?.jobSeekerId) {
+      checkIfApplied();
+    }
+  }, [job?.jobId, jobSeeker?.jobSeekerId]);
 
    
   if (loading) {
@@ -169,11 +205,23 @@ function JobDetailPage() {
         )}
       </div>
 
-      {user?.userType === "JOB_SEEKER" && <div className="job-detail-actions">
-        <button className="apply-btn" onClick={() => navigate(`/apply/${job.jobId}`, { state: { job } })}>
-          Apply Now
-        </button>
-      </div> }
+      {user?.userType === "JOB_SEEKER" && (
+        <div className="job-detail-actions">
+          {job?.status?.toUpperCase() === 'INACTIVE' ? (
+            <button className="apply-btn inactive" disabled>
+              ✕ Position Closed
+            </button>
+          ) : isApplied ? (
+            <button className="apply-btn applied" disabled>
+              ✓ Already Applied
+            </button>
+          ) : (
+            <button className="apply-btn" onClick={() => navigate(`/apply/${job.jobId}`, { state: { job } })}>
+              Apply Now
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

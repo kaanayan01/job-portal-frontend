@@ -18,6 +18,20 @@ try {
     console.log("✗ No reduxUserState in localStorage");
   }
   
+  // Load jobSeeker state
+  const storedJobSeeker = localStorage.getItem('reduxJobSeekerState');
+  if (storedJobSeeker) {
+    persistedJobSeekerState = { jobSeeker: JSON.parse(storedJobSeeker) };
+    console.log("✓ Successfully loaded persisted jobSeeker state:", persistedJobSeekerState);
+  }
+  
+  // Load employer state
+  const storedEmployer = localStorage.getItem('reduxEmployerState');
+  if (storedEmployer) {
+    persistedEmployerState = { employer: JSON.parse(storedEmployer) };
+    console.log("✓ Successfully loaded persisted employer state:", persistedEmployerState);
+  }
+  
   // Also check if token exists in jwtToken key (from api.js)
   const jwtToken = localStorage.getItem('jwtToken');
   console.log("Found jwtToken in localStorage:", jwtToken ? "yes" : "no");
@@ -54,6 +68,16 @@ store.subscribe(() => {
     // Also sync token to jwtToken key for api.js compatibility
     if (state.user.token) {
       localStorage.setItem('jwtToken', state.user.token);
+    }
+    
+    // Persist jobSeeker and employer states
+    if (state.jobSeeker?.jobSeeker) {
+      localStorage.setItem('reduxJobSeekerState', JSON.stringify(state.jobSeeker.jobSeeker));
+      console.log("✓ Persisted jobSeeker state:", state.jobSeeker.jobSeeker);
+    }
+    if (state.employer?.employer) {
+      localStorage.setItem('reduxEmployerState', JSON.stringify(state.employer.employer));
+      console.log("✓ Persisted employer state:", state.employer.employer);
     }
   } catch (e) {
     console.error('Failed to persist Redux state:', e);

@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { apiFetch, getToken } from "../api";
 import { useReduxUser } from "../hooks/useReduxUser";
 import { useNavigate, useParams } from "react-router-dom";
+import { setJobSeeker } from "../store/jobSeekerSlice";
+import { setEmployer } from "../store/employerSlice";
 import "./PaymentPage.css";
 
 export default function PaymentPage() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const { subscriptionId } = useParams();
   const reduxUser = useReduxUser();
+  const jobSeeker = useSelector(state => state.jobSeeker?.jobSeeker);
+  const employer = useSelector(state => state.employer?.employer);
   const userId = reduxUser?.userId;
   const userType = reduxUser?.userType;
 
@@ -23,6 +29,38 @@ export default function PaymentPage() {
   const [error, setError] = useState("");
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [paymentId, setPaymentId] = useState("");
+
+  // Get privileges based on user type and plan type
+  const getPrivileges = (planType) => {
+    if (userType === "JOB_SEEKER") {
+      if (planType === "PREMIUM") {
+        return [
+          "Unlimited job applications per day",
+          "Skill match analysis",
+          "Premium job listings access"
+        ];
+      } else {
+        return [
+          "5 job applications per day",
+          "Basic job search"
+        ];
+      }
+    } else if (userType === "EMPLOYER") {
+      if (planType === "PREMIUM") {
+        return [
+          "Unlimited job posts per day",
+          "Advanced job listings",
+          "Analytics and insights"
+        ];
+      } else {
+        return [
+          "5 job posts per day",
+          "Basic job posting"
+        ];
+      }
+    }
+    return [];
+  };
 
   // Fetch subscription details on mount
   useEffect(() => {
@@ -204,8 +242,11 @@ export default function PaymentPage() {
         subscriptionId: parseInt(subscriptionId),
         amount: subscription?.price,
         paymentMethod: paymentForm.paymentMethod,
-        status: updateStatus
+        status: updateStatus,
+        paymentDate : new Date().toISOString()
+
       };
+      console.log("Updating payment status to:", updatePaymentData);
 
       const updateRes = await apiFetch(`/api/payments/${paymentId}`, {
         method: "PUT",
@@ -221,6 +262,19 @@ export default function PaymentPage() {
 
       if (updateRes.status === 200 || updateRes.status === 201) {
         if (updateStatus === "SUCCESS") {
+          // Update Redux with premium status
+          if (userType === "JOB_SEEKER" && jobSeeker) {
+            dispatch(setJobSeeker({
+              ...jobSeeker,
+              subscriptionType: "PREMIUM"
+            }));
+          } else if (userType === "EMPLOYER" && employer) {
+            dispatch(setEmployer({
+              ...employer,
+              subscriptionType: "PREMIUM"
+            }));
+          }
+
           setMessage("✓ Payment processed successfully!");
           // Redirect to subscriptions page after 2 seconds
           setTimeout(() => {
@@ -290,9 +344,18 @@ export default function PaymentPage() {
               <span className="detail-label">Amount:</span>
               <span className="detail-value amount">${subscription.price}</span>
             </div>
-            <div className="detail-row">
-              <span className="detail-label">User Type:</span>
-              <span className="detail-value">{subscription.userType}</span>
+
+            {/* Privileges Section */}
+            <div className="privileges-container">
+              <h4 className="privileges-header">What you'll get:</h4>
+              <ul className="privileges-list">
+                {getPrivileges(subscription.planType).map((privilege, index) => (
+                  <li key={index} className="privilege-item">
+                    <span className="privilege-icon">✓</span>
+                    <span className="privilege-text">{privilege}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         )}

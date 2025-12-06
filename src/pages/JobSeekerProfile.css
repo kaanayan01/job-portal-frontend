@@ -78,9 +78,182 @@
   color: #fff;
 }
 
+/* Profile Actions */
+.profile-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.profile-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.profile-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.profile-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.profile-btn.active {
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Profile View Container */
+.profile-view-container {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.profile-view-container h3 {
+  margin-top: 0;
+  font-size: 1.5rem;
+  color: #1a1a1a;
+  margin-bottom: 24px;
+}
+
+.profile-details {
+  display: grid;
+  gap: 24px;
+}
+
+.profile-section {
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.profile-section h4 {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+  color: #1a1a1a;
+  font-weight: 700;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #555;
+  min-width: 150px;
+}
+
+.detail-value {
+  color: #333;
+  text-align: right;
+  flex: 1;
+}
+
+/* Skills List */
+.skills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.skill-tag {
+  display: inline-block;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.no-data {
+  color: #999;
+  font-style: italic;
+}
+
+/* Resume Link */
+.resume-link {
+  display: inline-block;
+  padding: 10px 16px;
+  background: #2f7be2;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.resume-link:hover {
+  background: #1d5fd1;
+  box-shadow: 0 2px 8px rgba(47, 123, 226, 0.3);
+}
+
+/* Subscription Badge */
+.subscription-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.subscription-badge.premium {
+  background: linear-gradient(135deg, #ffd89b 0%, #ffa751 100%);
+  color: #8b5000;
+  border: 1px solid #ffb366;
+}
+
+.subscription-badge.free {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.loading {
+  text-align: center;
+  color: #999;
+  padding: 20px;
+  font-size: 1rem;
+}
+
 @media (max-width: 600px) {
   .main-container {
     margin: 18px;
     padding: 14px;
+  }
+
+  .profile-section {
+    padding: 12px;
+  }
+
+  .detail-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .detail-value {
+    text-align: left;
   }
 }

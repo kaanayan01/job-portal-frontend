@@ -176,10 +176,25 @@
   flex-grow: 1;
 }
 
+.privileges-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.privileges-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #667eea;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 0.75rem 0;
+}
+
 .feature {
   display: flex;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   color: #333;
   font-size: 0.95rem;
 }
@@ -188,15 +203,23 @@
   margin-bottom: 0;
 }
 
+.feature.duration-feature {
+  margin-bottom: 0;
+  color: #999;
+  font-size: 0.9rem;
+}
+
 .feature-icon {
   color: #667eea;
   font-weight: 700;
   margin-right: 0.75rem;
   font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .feature-text {
   color: #666;
+  line-height: 1.4;
 }
 
 /* Card Footer */

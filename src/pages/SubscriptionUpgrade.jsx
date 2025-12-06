@@ -70,6 +70,38 @@ export default function SubscriptionUpgrade() {
     navigate(`/payment/${selectedSubscription}`);
   };
 
+  // Get privileges based on user type
+  const getPrivileges = (planType) => {
+    if (userType === "JOB_SEEKER") {
+      if (planType === "PREMIUM") {
+        return [
+          "Unlimited job applications per day",
+          "Skill match analysis",
+          "Premium job listings access"
+        ];
+      } else {
+        return [
+          "5 job applications per day",
+          "Basic job search"
+        ];
+      }
+    } else if (userType === "EMPLOYER") {
+      if (planType === "PREMIUM") {
+        return [
+          "Unlimited job posts per day",
+          "Advanced job listings",
+          "Analytics and insights"
+        ];
+      } else {
+        return [
+          "5 job posts per day",
+          "Basic job posting"
+        ];
+      }
+    }
+    return [];
+  };
+
   return (
     <div className="subscription-upgrade-container">
       <div className="upgrade-header">
@@ -111,16 +143,20 @@ export default function SubscriptionUpgrade() {
               </div>
 
               <div className="card-body">
-                <div className="feature">
-                  <span className="feature-icon">✓</span>
-                  <span className="feature-text">
-                    {sub.duration} days access
-                  </span>
+                <div className="privileges-section">
+                  <h4 className="privileges-title">What you get:</h4>
+                  {getPrivileges(sub.planType).map((privilege, index) => (
+                    <div key={index} className="feature">
+                      <span className="feature-icon">✓</span>
+                      <span className="feature-text">{privilege}</span>
+                    </div>
+                  ))}
                 </div>
-                <div className="feature">
-                  <span className="feature-icon">✓</span>
+
+                <div className="feature duration-feature">
+                  <span className="feature-icon">📅</span>
                   <span className="feature-text">
-                    {sub.userType} privileges
+                    Valid for {sub.duration} days
                   </span>
                 </div>
               </div>

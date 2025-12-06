@@ -185,6 +185,40 @@
   transform: scale(0.98);
 }
 
+.apply-btn.applied {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  cursor: not-allowed;
+  font-weight: 600;
+}
+
+.apply-btn.applied:hover {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+}
+
+.apply-btn.applied:active {
+  transform: scale(1);
+}
+
+.apply-btn.inactive {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  cursor: not-allowed;
+  font-weight: 600;
+}
+
+.apply-btn.inactive:hover {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+}
+
+.apply-btn.inactive:active {
+  transform: scale(1);
+}
+
 .back-btn {
   flex: 1;
   padding: 15px 30px;
