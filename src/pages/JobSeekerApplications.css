@@ -190,6 +190,8 @@
   background: #ccc;
   cursor: not-allowed;
   transform: none;
+  opacity: 0.6;
+  color: #666;
 }
 
 /* No Applications State */

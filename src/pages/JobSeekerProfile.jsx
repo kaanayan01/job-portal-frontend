@@ -31,10 +31,13 @@ function JobSeekerProfile({user, setCurrentPage}) {
     skills: "",
   });
   const [errorMsg, setErrorMsg] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [resumeFile, setResumeFile] = useState(null);
   const [profileData, setProfileData] = useState(null);
   const [profileLoading, setProfileLoading] = useState(false);
-  const [showProfileView, setShowProfileView] = useState(false);
+  const [showProfileView, setShowProfileView] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
 
   // Initialize userId from effectiveUser when component mounts or user changes
   useEffect(() => {
@@ -45,18 +48,18 @@ function JobSeekerProfile({user, setCurrentPage}) {
     console.log("  - user prop:", user);
     
     if (effectiveUser && effectiveUser.userId) {
-      console.log("  ✓ Setting userId to:", effectiveUser.userId);
+      console.log("   Setting userId to:", effectiveUser.userId);
       setForm((prev) => ({ ...prev, userId: effectiveUser.userId }));
     } else {
-      console.log("  ✗ No userId found in effectiveUser");
+      console.log("   No userId found in effectiveUser");
     }
 
     // Fetch profile data using jobSeekerId
     if (jobSeeker && jobSeeker.jobSeekerId) {
-      console.log("  ✓ Fetching profile with jobSeekerId:", jobSeeker.jobSeekerId);
+      console.log("   Fetching profile with jobSeekerId:", jobSeeker.jobSeekerId);
       fetchProfileData(jobSeeker.jobSeekerId);
     } else {
-      console.log("  ✗ No jobSeekerId found");
+      console.log("   No jobSeekerId found");
     }
   }, [effectiveUser, reduxUser, user, jobSeeker]);
 
@@ -91,6 +94,9 @@ function JobSeekerProfile({user, setCurrentPage}) {
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrorMsg("");
+    setSuccessMsg("");
+    
     console.log("handleSubmit - form.userId:", form.userId, "reduxUser:", reduxUser, "user:", user);
     
     // ensure we have a user id before proceeding
@@ -99,36 +105,42 @@ function JobSeekerProfile({user, setCurrentPage}) {
       return;
     }
 
-  
-console.log("Submit Profile Api Initiated --->");
+    setIsSubmitting(true);
+    console.log("Submit Profile Api Initiated --->");
     try {
       const userId = form.userId;
-      const skills = form.skills ? form.skills.split(",") : [];
+      const jobSeekerId = jobSeeker?.jobSeekerId;
+      const skills = form.skills ? form.skills.split(",").map(s => s.trim()) : [];
 
       let res;
-      // If a resume file is provided, use multipart/form-data endpoint (previous API)
-      if (resumeFile) {
-        const fd = new FormData();
-        fd.append("userId", userId);
-        fd.append("skills", JSON.stringify(skills));
-        fd.append("resume", resumeFile);
+      const token = getToken();
 
-        // previous API expects multipart/form-data at /api/jobseekers/profile
-        res = await fetch(API_BASE_URL + "/api/jobseekers/profile", {
-          method: "POST",
-          body: fd,
-          credentials: "include",
+      // If jobSeeker exists, use PUT to update profile
+      if (jobSeekerId) {
+        console.log("Updating existing profile with jobSeekerId:", jobSeekerId);
+        
+        const updateData = {
+          userId,
+          skills,
+        };
+
+        res = await apiFetch(`/api/jobseekers/${jobSeekerId}`, {
+          method: "PUT",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify(updateData),
         });
       } else {
-        // current API (JSON)
+        // Create new profile if no jobSeekerId exists
+        console.log("Creating new profile");
+
         res = await apiFetch("/api/jobseekers", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             userId,
@@ -138,17 +150,81 @@ console.log("Submit Profile Api Initiated --->");
       }
 
       const json = await res.json().catch(() => ({}));
-      console.log("Register response:", json);
+      console.log("Response:", json);
 
-      if (json.status !== "success" && json.status !== 201) {
-        goToJobSeeker();
+      if (res.status === 200 || res.status === 201 || json.status === "success") {
+        const message = jobSeekerId ? "Profile updated successfully!" : "Profile created successfully!";
+        setSuccessMsg(message);
+        
+        // Refresh profile data
+        if (jobSeekerId) {
+          fetchProfileData(jobSeekerId);
+        }
+        
+        // Clear form and reset state
+        setResumeFile(null);
+        
+        // If resumeFile was selected, upload it separately
+        if (resumeFile && jobSeekerId) {
+          await handleResumeUpload(jobSeekerId);
+        } else {
+          setTimeout(() => {
+            setShowProfileView(true);
+          }, 1500);
+        }
         return;
       }
 
      
     } catch (err) {
-      console.error("Register error:", err);
+      console.error("Profile save error:", err);
       setErrorMsg('Failed to save profile. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle resume upload separately
+  const handleResumeUpload = async (jobSeekerId) => {
+    if (!resumeFile) return;
+
+    setIsUploadingResume(true);
+    try {
+      const token = getToken();
+      const formData = new FormData();
+      formData.append("file", resumeFile);
+
+      const res = await fetch(`${API_BASE_URL}/api/jobseekers/${jobSeekerId}/resume`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const json = await res.json().catch(() => ({}));
+      console.log("Resume upload response:", json);
+
+      if (res.status === 200 || res.status === 201 || json.status === "success") {
+        setSuccessMsg("Resume uploaded successfully!");
+        setResumeFile(null);
+        
+        // Refresh profile data to show updated resume
+        if (jobSeekerId) {
+          await fetchProfileData(jobSeekerId);
+        }
+        
+        setTimeout(() => {
+          setShowProfileView(true);
+        }, 1500);
+      } else {
+        setErrorMsg("Failed to upload resume. Please try again.");
+      }
+    } catch (err) {
+      console.error("Resume upload error:", err);
+      setErrorMsg("Error uploading resume. Please try again.");
+    } finally {
+      setIsUploadingResume(false);
     }
   };
 
@@ -158,14 +234,6 @@ console.log("Submit Profile Api Initiated --->");
   
   };
 
-  const submit = (e) => {
-
-    e.preventDefault();
-    // Backend will connect this to JobSeekerController updateProfile endpoint.
-    console.log("JobSeeker profile payload:", form);
-    alert("Profile form submitted");
-  };
-
   return (
     <div className="main-container">
       <h2>My Profile</h2>
@@ -173,36 +241,48 @@ console.log("Submit Profile Api Initiated --->");
       <div className="profile-actions">
         <button 
           className={`profile-btn ${showProfileView ? 'active' : ''}`}
-          onClick={() => setShowProfileView(!showProfileView)}
+          onClick={() => setShowProfileView(true)}
           disabled={profileLoading || !profileData}
+          hidden={showProfileView}
         >
-          {showProfileView ? "📝 Edit Profile" : "👁️ View Profile"}
+           View Profile
         </button>
       </div>
 
       {showProfileView && profileData ? (
         <div className="profile-view-container">
-          <h3>Profile Details</h3>
+          <div className="profile-view-header">
+            <h3>Profile Details</h3>
+            <div className="profile-header-buttons">
+              {jobSeeker && (
+                <button 
+                  className="edit-profile-btn"
+                  onClick={() => {
+                    // Populate form with existing data for editing
+                    if (profileData.skills && Array.isArray(profileData.skills)) {
+                      setForm(prev => ({
+                        ...prev,
+                        skills: profileData.skills.join(", ")
+                      }));
+                    }
+                    setShowProfileView(false);
+                  }}
+                >
+                  ✏️ Update Profile
+                </button>
+              )}
+              <button 
+                className="close-profile-btn"
+                onClick={() => setShowProfileView(false)}
+              >
+                ✕ Close
+              </button>
+            </div>
+          </div>
           {profileLoading ? (
             <p className="loading">Loading profile...</p>
           ) : (
             <div className="profile-details">
-              <div className="profile-section">
-                <h4>Basic Information</h4>
-                <div className="detail-item">
-                  <span className="detail-label">User ID:</span>
-                  <span className="detail-value">{profileData.userId || profileData.jobSeekerId || "N/A"}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Email:</span>
-                  <span className="detail-value">{profileData.email || "N/A"}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Phone:</span>
-                  <span className="detail-value">{profileData.phone || "N/A"}</span>
-                </div>
-              </div>
-
               <div className="profile-section">
                 <h4>Skills</h4>
                 {profileData.skills && profileData.skills.length > 0 ? (
@@ -216,20 +296,6 @@ console.log("Submit Profile Api Initiated --->");
                 )}
               </div>
 
-              {profileData.experience && (
-                <div className="profile-section">
-                  <h4>Experience</h4>
-                  <p>{profileData.experience}</p>
-                </div>
-              )}
-
-              {profileData.education && (
-                <div className="profile-section">
-                  <h4>Education</h4>
-                  <p>{profileData.education}</p>
-                </div>
-              )}
-
               {profileData.resume && (
                 <div className="profile-section">
                   <h4>Resume</h4>
@@ -242,34 +308,22 @@ console.log("Submit Profile Api Initiated --->");
               <div className="profile-section">
                 <h4>Subscription</h4>
                 <div className="detail-item">
-                  <span className="detail-label">Subscription Type:</span>
+                  <span className="detail-label">Type:</span>
                   <span className={`subscription-badge ${(profileData.subscriptionType || 'FREE').toLowerCase()}`}>
                     {profileData.subscriptionType || "FREE"}
-                  </span>
-                </div>
-              </div>
-
-              <div className="profile-section">
-                <h4>Additional Information</h4>
-                <div className="detail-item">
-                  <span className="detail-label">Profile Created:</span>
-                  <span className="detail-value">
-                    {profileData.createdAt ? new Date(profileData.createdAt).toLocaleDateString() : "N/A"}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Last Updated:</span>
-                  <span className="detail-value">
-                    {profileData.updatedAt ? new Date(profileData.updatedAt).toLocaleDateString() : "N/A"}
                   </span>
                 </div>
               </div>
             </div>
           )}
         </div>
-      ) : (
+      ) : null}
+
+      {!showProfileView && (
         <div className="form-shell">
+          <h3>Update Your Profile</h3>
           {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
+          {successMsg && <div className="alert alert-success">{successMsg}</div>}
           <form className="form" onSubmit={handleSubmit}>
             <div className="form-row">
               <label className="form-label">Skills (comma separated)</label>
@@ -278,16 +332,43 @@ console.log("Submit Profile Api Initiated --->");
                 name="skills"
                 value={form.skills}
                 onChange={handleChange}
+                placeholder="e.g. Java, React, Python"
               />
             </div>
 
             <div className="form-row">
               <label className="form-label">Resume (optional)</label>
-              <input className="form-input" type="file" onChange={(e)=>setResumeFile(e.target.files && e.target.files[0])} />
+              <input 
+                className="form-input" 
+                type="file" 
+                accept=".pdf,.doc,.docx"
+                onChange={(e) => {
+                  const file = e.target.files && e.target.files[0];
+                  if (file) {
+                    // Check file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                      setErrorMsg("File size must be less than 5MB");
+                      e.target.value = "";
+                    } else {
+                      setErrorMsg("");
+                      setResumeFile(file);
+                    }
+                  }
+                }}
+              />
+              {resumeFile && (
+                <div className="file-info">
+                  <span>📎 Selected: {resumeFile.name}</span>
+                </div>
+              )}
             </div>
 
-            <button className="btn btn-primary" type="submit">
-              Save profile
+            <button 
+              className="btn btn-primary" 
+              type="submit"
+              disabled={isSubmitting || isUploadingResume}
+            >
+              {isSubmitting || isUploadingResume ? "Saving..." : "Save Changes"}
             </button>
           </form>
         </div>

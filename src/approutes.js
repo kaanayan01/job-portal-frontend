@@ -3,6 +3,8 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 
 import Layout from "./components/Layout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import PremiumCheckRoute from "./components/PremiumCheckRoute";
 import HomePage from "./pages/HomePage";
 import JobSeekerProfile from "./pages/JobSeekerProfile";
 import LoginPage from "./pages/LoginPage";
@@ -49,32 +51,33 @@ export default function AppRoutes() {
         {/* Public Job Routes */}
         <Route path="jobs" element={<JobsPage />} />
         <Route path="job/:jobId" element={<JobDetailPage />} />
+        <Route path="upgrade" element={<SubscriptionUpgrade />}/>
+
 
         {/* Job Seeker Routes */}
-        <Route path="jobseeker/profile" element={<JobSeekerProfile />} />
-        <Route path="jobseeker/dashboard" element={<JobSeekerDashboard />} />
-        <Route path="jobseeker/applications" element={<JobSeekerApplications />} />
-        <Route path="jobseeker/saved-jobs" element={<SavedJobs />} />
-        <Route path="apply/:jobId" element={<ApplyJobPage />} />
+        <Route path="jobseeker/profile" element={<ProtectedRoute requiredRole="jobseeker"><JobSeekerProfile /></ProtectedRoute>} />
+        <Route path="jobseeker/dashboard" element={<ProtectedRoute requiredRole="jobseeker"><JobSeekerDashboard /></ProtectedRoute>} />
+        <Route path="jobseeker/applications" element={<ProtectedRoute requiredRole="jobseeker"><JobSeekerApplications /></ProtectedRoute>} />
+        <Route path="jobseeker/saved-jobs" element={<ProtectedRoute requiredRole="jobseeker"><SavedJobs /></ProtectedRoute>} />
+        <Route path="apply/:jobId" element={<ProtectedRoute requiredRole="jobseeker"><ApplyJobPage /></ProtectedRoute>} />
 
         {/* Employer Routes */}
-        <Route path="employer/profile" element={<EmployerCompleteProfile />} />
-        <Route path="employer/dashboard" element={<EmployerDashboard />} />
-        <Route path="employer/create-job" element={<EmployerCreateJob />} />
-        <Route path="employer/jobs" element={<EmployerJobList />} />
-        <Route path="employer/applicants/:jobId" element={<EmployerViewApplicants />} />
-        <Route path="employer/pending" element={<EmployerPendingScreen />} />
-        <Route path="employer/rejected" element={<EmployerRejectedScreen />} />
-        <Route path="employer/upgrade" element={<SubscriptionUpgrade />} />
-        <Route path="payment/:subscriptionId" element={<PaymentPage />} />
+        <Route path="employer/profile" element={<ProtectedRoute requiredRole="employer"><EmployerCompleteProfile /></ProtectedRoute>} />
+        <Route path="employer/dashboard" element={<ProtectedRoute requiredRole="employer"><EmployerDashboard /></ProtectedRoute>} />
+        <Route path="employer/create-job" element={<ProtectedRoute requiredRole="employer"><EmployerCreateJob /></ProtectedRoute>} />
+        <Route path="employer/jobs" element={<ProtectedRoute requiredRole="employer"><EmployerJobList /></ProtectedRoute>} />
+        <Route path="employer/applicants/:jobId" element={<ProtectedRoute requiredRole="employer"><EmployerViewApplicants /></ProtectedRoute>} />
+        <Route path="employer/pending" element={<ProtectedRoute requiredRole="employer"><EmployerPendingScreen /></ProtectedRoute>} />
+        <Route path="employer/rejected" element={<ProtectedRoute requiredRole="employer"><EmployerRejectedScreen /></ProtectedRoute>} />
+        <Route path="payment/:subscriptionId" element={<ProtectedRoute requiredRole="employer"><PremiumCheckRoute><PaymentPage /></PremiumCheckRoute></ProtectedRoute>} />
 
         {/* Admin Routes */}
-        <Route path="admin/dashboard" element={<AdminDashboard />} />
-        <Route path="admin/users" element={<AdminUsers />} />
-        <Route path="admin/jobs" element={<AdminJobs />} />
-        <Route path="admin/payments" element={<AdminPayments />} />
-        <Route path="admin/reports" element={<AdminReports />} />
-        <Route path="admin/company/:employerId" element={<CompanyDetailPage />} />
+        <Route path="admin/dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
+        <Route path="admin/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
+        <Route path="admin/jobs" element={<ProtectedRoute requiredRole="admin"><AdminJobs /></ProtectedRoute>} />
+        <Route path="admin/payments" element={<ProtectedRoute requiredRole="admin"><AdminPayments /></ProtectedRoute>} />
+        <Route path="admin/reports" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
+        <Route path="admin/company/:employerId" element={<ProtectedRoute requiredRole="admin"><CompanyDetailPage /></ProtectedRoute>} />
 
       </Route>
     </Routes>

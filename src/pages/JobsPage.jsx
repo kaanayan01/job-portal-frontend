@@ -8,7 +8,8 @@ function JobsPage() {
   const navigate = useNavigate();
   const jobSeeker = useSelector(state => state.jobSeeker?.jobSeeker);
   const [jobs, setJobs] = useState([]);
-  const [appliedJobs, setAppliedJobs] = useState(new Set());
+  const [appliedJobs, setAppliedJobs] = useState(new Map()); // Changed to Map to store status
+  const [savedJobs, setSavedJobs] = useState(new Map()); // Map to store jobId -> savedJobId
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,6 +17,8 @@ function JobsPage() {
   const [skillMatchResult, setSkillMatchResult] = useState(null);
   const [skillMatchLoading, setSkillMatchLoading] = useState(false);
   const [withdrawingJobId, setWithdrawingJobId] = useState(null);
+  const [activeTab, setActiveTab] = useState("all"); // "all", "applied", "saved"
+  const [savingJobId, setSavingJobId] = useState(null);
   const itemsPerPage = 6;
 
   // Check if user is premium
@@ -127,8 +130,8 @@ function JobsPage() {
 
       if (res.status === 200) {
         alert("✓ Application withdrawn successfully!");
-        // Remove from appliedJobs set
-        const newAppliedJobs = new Set(appliedJobs);
+        // Remove from appliedJobs map
+        const newAppliedJobs = new Map(appliedJobs);
         newAppliedJobs.delete(jobId);
         setAppliedJobs(newAppliedJobs);
       } else {
@@ -142,18 +145,38 @@ function JobsPage() {
     }
   };
 
-  // Filter jobs based on search term
+  // Filter jobs based on search term and active tab
   const filteredJobs = useMemo(() => {
-    if (!searchTerm.trim()) return jobs;
+    let jobsToFilter = jobs;
+
+    // Filter by tab
+    if (activeTab === "applied") {
+      jobsToFilter = jobs.filter(job => appliedJobs.has(job.jobId));
+    } else if (activeTab === "saved") {
+      console.log("Filtering for saved tab:");
+      console.log("  savedJobs Map keys:", Array.from(savedJobs.keys()));
+      console.log("  jobs count:", jobs.length);
+      jobsToFilter = jobs.filter(job => {
+        const isSaved = savedJobs.has(job.jobId);
+        if (isSaved) {
+          console.log(`    Job ${job.jobId} (${job.title}) is saved`);
+        }
+        return isSaved;
+      });
+      console.log("  Filtered jobs count:", jobsToFilter.length);
+    }
+
+    // Filter by search term
+    if (!searchTerm.trim()) return jobsToFilter;
     
     const term = searchTerm.toLowerCase();
-    return jobs.filter(job =>
+    return jobsToFilter.filter(job =>
       (job.title && job.title.toLowerCase().includes(term)) ||
       (job.companyName && job.companyName.toLowerCase().includes(term)) ||
       (job.jobLocation && job.jobLocation.toLowerCase().includes(term)) ||
       (job.description && job.description.toLowerCase().includes(term))
     );
-  }, [jobs, searchTerm]);
+  }, [jobs, searchTerm, activeTab, appliedJobs, savedJobs]);
 
   // Paginate filtered jobs
   const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
@@ -189,14 +212,179 @@ function JobsPage() {
       console.log("Applied Jobs Response:", json);
 
       if (res.status === 200 && json.data && Array.isArray(json.data)) {
-        const appliedJobIds = new Set(json.data.map(app => app.job?.jobId || app.jobId));
-        setAppliedJobs(appliedJobIds);
-        console.log("Applied Job IDs Set:", Array.from(appliedJobIds));
+        const appliedJobMap = new Map();
+        json.data.forEach(app => {
+          const jobId = app.job?.jobId || app.jobId;
+          const status = app.status || "PENDING";
+          appliedJobMap.set(jobId, status);
+        });
+        setAppliedJobs(appliedJobMap);
+        console.log("Applied Jobs Map:", appliedJobMap);
       } else if (res.status === 200 && json.data) {
         console.log("Response data is not an array:", json.data);
       }
     } catch (err) {
       console.error("Error fetching applied jobs:", err);
+    }
+  };
+
+  // Fetch saved jobs for current user
+  const fetchSavedJobs = async () => {
+    if (!jobSeeker?.jobSeekerId) {
+      console.log("Job Seeker ID not available yet");
+      return;
+    }
+
+    try {
+      const token = getToken();
+      const res = await apiFetch(`/api/saved-jobs/jobseeker/${jobSeeker.jobSeekerId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+      });
+
+      const json = await res.json();
+      console.log("Saved Jobs Response:", json);
+
+      if (res.status === 200 && json.data && Array.isArray(json.data)) {
+        const savedJobMap = new Map();
+        json.data.forEach((saved, idx) => {
+          console.log(`Saved Job ${idx}:`, JSON.stringify(saved));
+          // Extract jobId - try multiple paths
+          const jobId = saved.job?.jobId || saved.jobId;
+          
+          // For the record ID, we'll use the actual ID from the database
+          // Try all possible field names
+          console.log("  Extracted jobId:", saved);
+          let recordId = saved.savedId ;
+          
+          // If we still don't have a recordId, use jobId as fallback
+          if (!recordId) {
+            recordId = jobId;
+          }
+          
+          console.log(`  -> jobId: ${jobId}, recordId: ${recordId}`);
+          
+          if (jobId) {
+            savedJobMap.set(jobId, recordId);
+          }
+        });
+        setSavedJobs(savedJobMap);
+        console.log("Final Saved Jobs Map:", savedJobMap);
+      }
+    } catch (err) {
+      console.error("Error fetching saved jobs:", err);
+    }
+  };
+
+  // Save or unsave a job
+  const handleToggleSaveJob = async (jobId) => {
+    if (!jobSeeker?.jobSeekerId) {
+      alert("Job seeker information not found. Please login first.");
+      return;
+    }
+
+    try {
+      setSavingJobId(jobId);
+      const token = getToken();
+      
+      // Handle both Map and Set for backwards compatibility
+      let savedJobId;
+      let isSaved = false;
+      
+      if (savedJobs instanceof Map) {
+        savedJobId = savedJobs.get(jobId);
+        isSaved = savedJobId !== undefined;
+      } else if (savedJobs instanceof Set) {
+        isSaved = savedJobs.has(jobId);
+        savedJobId = jobId; // For Set, use jobId directly
+      }
+
+      if (isSaved) {
+        // Unsave: DELETE request using saved job record ID
+        console.log(`Deleting saved job: jobId=${jobId}, savedId=${savedJobId}`);
+        
+        const res = await apiFetch(`/api/saved-jobs/${savedJobId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        });
+
+        console.log("Delete response status:", res.status);
+        
+        if (res.status === 200 || res.status === 204) {
+          const newSavedJobs = new Map(savedJobs);
+          newSavedJobs.delete(jobId);
+          setSavedJobs(newSavedJobs);
+          console.log("Job unsaved successfully");
+        } else {
+          const json = await res.json();
+          console.error("Delete failed:", json);
+          alert(json.message || "Failed to unsave job");
+        }
+      } else {
+        // Save: POST request
+        const postBody = {
+          jobSeekerId: jobSeeker.jobSeekerId,
+          jobId: jobId,
+        };
+        console.log("Attempting to save job with body:", postBody);
+        
+        const res = await apiFetch("/api/saved-jobs", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+          body: JSON.stringify(postBody),
+        });
+
+        const json = await res.json();
+        console.log("Save job response status:", res.status);
+        console.log("Save job response:", JSON.stringify(json));
+        
+        // Check if response indicates success (200, 201, or even if status field shows success)
+        if (res.ok || res.status === 200 || res.status === 201 || json.status === 200) {
+          console.log("Job saved successfully!");
+          
+          // Extract the actual saved job record ID from the response
+          let savedId = null;
+          if (json.data) {
+            if (typeof json.data === 'object') {
+              savedId = json.data.id || json.data.savedJobId || json.data.saveId;
+            } else if (typeof json.data === 'number') {
+              savedId = json.data;
+            }
+          }
+          
+          console.log("Extracted saved ID from response:", savedId);
+          
+          if (savedId) {
+            // Store the actual saved record ID
+            const newSavedJobs = new Map(savedJobs);
+            newSavedJobs.set(jobId, savedId);
+            setSavedJobs(newSavedJobs);
+            console.log("Stored in Map: jobId =", jobId, "savedId =", savedId);
+          } else {
+            // If we couldn't extract the ID, refetch to get it
+            console.log("Could not extract saved ID from response, refetching...");
+            await fetchSavedJobs();
+          }
+          
+        } else {
+          console.error("Save job failed with status:", res.status, "Response:", json);
+          alert(json.message || `Failed to save job (Status: ${res.status})`);
+        }
+      }
+    } catch (err) {
+      console.error("Error toggling save job:", err);
+      alert("Failed to save/unsave job. Please try again.");
+    } finally {
+      setSavingJobId(null);
     }
   };
 
@@ -245,6 +433,7 @@ function JobsPage() {
   useEffect(() => {
     if (jobs.length > 0 && jobSeeker?.jobSeekerId) {
       fetchAppliedJobs();
+      fetchSavedJobs();
     }
   }, [jobSeeker?.jobSeekerId, jobs.length]);
 
@@ -261,6 +450,37 @@ function JobsPage() {
       <div className="jobs-header">
         <h1>Available Jobs</h1>
         <p className="jobs-count">{filteredJobs.length} positions found</p>
+      </div>
+
+      {/* Tabs */}
+      <div className="jobs-tabs">
+        <button
+          className={`tab-btn ${activeTab === "all" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("all");
+            setCurrentPage(1);
+          }}
+        >
+          📋 All Jobs
+        </button>
+        <button
+          className={`tab-btn ${activeTab === "applied" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("applied");
+            setCurrentPage(1);
+          }}
+        >
+          ✓ Applied ({appliedJobs.size})
+        </button>
+        <button
+          className={`tab-btn ${activeTab === "saved" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("saved");
+            setCurrentPage(1);
+          }}
+        >
+          ★ Saved ({savedJobs.size})
+        </button>
       </div>
 
       {/* Search Bar */}
@@ -283,9 +503,10 @@ function JobsPage() {
         <>
           <div className="jobs-grid">
             {paginatedJobs.map(job => {
-              const isApplied = appliedJobs.has(job.jobId);
+              const applicationStatus = appliedJobs.get(job.jobId);
+              const isApplied = applicationStatus !== undefined;
               if (isApplied) {
-                console.log(`Job ${job.jobId} (${job.title}) is applied:`, isApplied);
+                console.log(`Job ${job.jobId} (${job.title}) status:`, applicationStatus);
               }
               return (
               <div className="job-card" key={job.jobId}>
@@ -299,20 +520,20 @@ function JobsPage() {
                   </div>
                 </div>
 
-                {/* Applied Badge with Withdraw */}
+                {/* Applied Badge with Status and Withdraw */}
                 {isApplied && (
                   <div className="applied-badge-container">
-                    <div className="applied-badge">
+                    <div className={`applied-badge status-${applicationStatus?.toLowerCase() || 'pending'}`}>
                       <span className="badge-icon">✓</span>
-                      <span className="badge-text">Applied</span>
+                      <span className="badge-text">{applicationStatus || "PENDING"}</span>
                     </div>
                     <button
                       className="withdraw-badge-btn"
                       onClick={() => handleWithdrawApplication(job.jobId)}
-                      disabled={withdrawingJobId === job.jobId}
-                      title="Withdraw your application"
+                      disabled={withdrawingJobId === job.jobId || (applicationStatus && applicationStatus !== "APPLIED")}
+                      title={applicationStatus && applicationStatus !== "APPLIED" ? "Can only withdraw applications with APPLIED status" : "Withdraw your application"}
                     >
-                      {withdrawingJobId === job.jobId ? "..." : "✕"}
+                      {withdrawingJobId === job.jobId ? "..." : (applicationStatus && applicationStatus !== "APPLIED") ? "✗" : "✕"}
                     </button>
                   </div>
                 )}
@@ -354,6 +575,15 @@ function JobsPage() {
                       View Details
                     </button>
                   )}
+
+                  <button
+                    className={`save-job-btn ${savedJobs.has(job.jobId) ? "saved" : ""}`}
+                    onClick={() => handleToggleSaveJob(job.jobId)}
+                    disabled={savingJobId === job.jobId}
+                    title={savedJobs.has(job.jobId) ? "Remove from saved jobs" : "Save this job"}
+                  >
+                    {savingJobId === job.jobId ? "..." : savedJobs.has(job.jobId) ? "★ Saved" : "☆ Save"}
+                  </button>
 
                   {isPremium && job.status?.toUpperCase() !== 'INACTIVE' && (
                     <button

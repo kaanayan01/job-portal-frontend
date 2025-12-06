@@ -26,6 +26,36 @@
   margin: 0;
 }
 
+/* Jobs Tabs */
+.jobs-tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 0;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #666;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.tab-btn:hover {
+  color: #2f7be2;
+}
+
+.tab-btn.active {
+  color: #2f7be2;
+  border-bottom-color: #2f7be2;
+}
+
 /* Search Section */
 .search-section {
   display: flex;
@@ -168,6 +198,25 @@
   border: 1px solid #c3e6cb;
 }
 
+/* Status-specific badge colors */
+.applied-badge.status-pending {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%);
+  color: #856404;
+  border-color: #ffeeba;
+}
+
+.applied-badge.status-accepted {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border-color: #c3e6cb;
+}
+
+.applied-badge.status-rejected {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border-color: #f5c6cb;
+}
+
 .badge-icon {
   font-weight: 700;
   font-size: 0.9rem;
@@ -205,6 +254,7 @@
   background: #ccc;
   cursor: not-allowed;
   transform: none;
+  opacity: 0.6;
 }
 
 .job-details {
@@ -317,6 +367,46 @@
   min-width: 120px;
   margin-top: 0;
   width: auto;
+}
+
+/* Save Job Button */
+.save-job-btn {
+  flex: 1;
+  min-width: 120px;
+  padding: 12px 20px;
+  background: #f0f0f0;
+  color: #666;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.save-job-btn:hover:not(:disabled) {
+  background: #fff;
+  border-color: #ffa500;
+  color: #ffa500;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.3);
+}
+
+.save-job-btn.saved {
+  background: linear-gradient(135deg, #ffa500 0%, #ff8c00 100%);
+  color: white;
+  border-color: #ffa500;
+}
+
+.save-job-btn.saved:hover:not(:disabled) {
+  background: linear-gradient(135deg, #ff8c00 0%, #ff7700 100%);
+  box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4);
+}
+
+.save-job-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 /* Skill Match Button */

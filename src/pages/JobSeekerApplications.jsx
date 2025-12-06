@@ -137,7 +137,7 @@ function JobSeekerApplications() {
                 <div className="detail-row">
                   <span className="detail-label">Applied On:</span>
                   <span className="detail-value">
-                    {app.appliedDate ? new Date(app.appliedDate).toLocaleDateString() : "N/A"}
+                     {app.appliedDate ? new Date(app.appliedDate).toLocaleDateString() : "N/A"}
                   </span>
                 </div>
               </div>
@@ -152,10 +152,12 @@ function JobSeekerApplications() {
                     console.log("Withdraw clicked for app:", app.applicationId);
                     handleWithdrawApplication(app.applicationId);
                   }}
-                  disabled={withdrawingId === app.applicationId}
+                  disabled={withdrawingId === app.applicationId || (app.status && app.status !== "APPLIED")}
+                  title={app.status && app.status !== "APPLIED" ? "Can only withdraw applications with APPLIED status" : "Withdraw your application"}
                   style={{ display: 'block' }}
                 >
-                  {withdrawingId === app.applicationId ? "Withdrawing..." : "Withdraw"}
+                  {withdrawingId === app.applicationId ? "Withdrawing..." : 
+                   (app.status && app.status !== "APPLIED") ? "Cannot Withdraw" : "Withdraw"}
                 </button>
               </div>
             </div>
