@@ -15,13 +15,15 @@ export default function ProtectedRoute({ children, requiredRole }) {
 
   // Check if user has the required role
   const hasAccess = () => {
+    console.log("Checking access for role:", requiredRole);
     if (requiredRole === "jobseeker") {
       return jobSeeker && jobSeeker.jobSeekerId;
     }
     if (requiredRole === "employer") {
       return employer && employer.employerId;
     }
-    if (requiredRole === "admin") {
+    if (requiredRole === "ADMIN") {
+        console.log("Checking admin access for user:", user);
       return user && user.userType === "ADMIN";
     }
     return false;

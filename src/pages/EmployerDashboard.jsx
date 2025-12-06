@@ -14,7 +14,6 @@ function EmployerDashboard() {
   const [error, setError] = useState("");
   const [stats, setStats] = useState({
     activeJobs: 0,
-    totalApplicants: 0,
     totalJobs: 0
   });
 
@@ -44,13 +43,9 @@ function EmployerDashboard() {
         
         // Calculate statistics
         const activeJobs = jobsList.filter(j => j.status === 'ACTIVE' || !j.status).length;
-        const totalApplicants = jobsList.reduce((sum, job) => {
-          return sum + (job.applicantCount || 0);
-        }, 0);
         
         setStats({
           activeJobs,
-          totalApplicants,
           totalJobs: jobsList.length
         });
         
@@ -117,13 +112,9 @@ function EmployerDashboard() {
                 <div className="metric-value">{stats.activeJobs}</div>
               </div>
               <div className="metric-card">
-                <div className="metric-label">Total Applicants</div>
-                <div className="metric-value">{stats.totalApplicants}</div>
-              </div>
-              <div className="metric-card">
                 <div className="metric-label">Plan</div>
                 <div className="metric-value">
-                  {isPremium ? "✨ Premium" : "Standard"}
+                  {isPremium ? "✨ Premium" : "FREE"}
                 </div>
               </div>
             </div>
@@ -146,7 +137,7 @@ function EmployerDashboard() {
                     <span>Job Title</span>
                     <span>Location</span>
                     <span>Status</span>
-                    <span>Applicants</span>
+                    
                     <span>Action</span>
                   </div>
                   {jobs.map((job) => (
@@ -158,7 +149,7 @@ function EmployerDashboard() {
                           {job.status || 'ACTIVE'}
                         </span>
                       </span>
-                      <span>{job.applicantCount || 0}</span>
+                     
                       <span>
                         <button 
                           className="view-btn"

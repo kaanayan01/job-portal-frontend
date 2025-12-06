@@ -57,8 +57,22 @@ function EmployerViewApplicants() {
       if (appRes.status === 200) {
         const appJson = await appRes.json();
         const applicantsList = Array.isArray(appJson.data) ? appJson.data : [];
-        setApplicants(applicantsList);
-        console.log("Applicants fetched:", applicantsList);
+        
+        // Transform the new DTO structure to match expected format
+        const transformedApplicants = applicantsList.map(item => {
+          // Handle both old format and new DTO format
+          if (item.application) {
+            return {
+              ...item.application,
+              jobSeeker: item.jobSeeker,
+              user: item.user
+            };
+          }
+          return item;
+        });
+        
+        setApplicants(transformedApplicants);
+        console.log("Applicants fetched:", transformedApplicants);
       } else {
         throw new Error("Failed to fetch applicants");
       }
@@ -84,11 +98,12 @@ function EmployerViewApplicants() {
 
       if (res.status === 200) {
         // Update the applicant in the list
-        setApplicants(applicants.map(app => 
-          app.applicationId === applicationId 
+        setApplicants(applicants.map(app => {
+          const appId = app.applicationId || app.id;
+          return appId === applicationId 
             ? { ...app, status: newStatus }
-            : app
-        ));
+            : app;
+        }));
         console.log("Application status updated:", newStatus);
       } else {
         const json = await res.json();
@@ -106,8 +121,8 @@ function EmployerViewApplicants() {
     try {
       setLoadingApplicantDetails(true);
       
-      // Get the job seeker ID from the application object
-      const jobSeekerId = applicant.jobSeekerId;
+      // Get the job seeker ID - check both old and new format
+      const jobSeekerId = applicant.jobSeekerId || applicant.jobSeeker?.jobSeekerId;
       
       if (!jobSeekerId) {
         console.log("No job seeker ID found in application, using existing data");
@@ -116,10 +131,18 @@ function EmployerViewApplicants() {
         return;
       }
 
+      // If we already have jobSeeker data in the applicant object, use it directly
+      if (applicant.jobSeeker && Object.keys(applicant.jobSeeker).length > 1) {
+        console.log("Using existing job seeker data from applicant");
+        setSelectedApplicant(applicant);
+        setLoadingApplicantDetails(false);
+        return;
+      }
+
       console.log("Fetching job seeker details for ID:", jobSeekerId);
       
       // Fetch complete job seeker details
-      const res = await apiFetch(`/api/jobseekers/${jobSeekerId}`);
+      const res = await apiFetch(`/api/job-seekers/${jobSeekerId}`);
       
       if (res.status === 200) {
         const json = await res.json();
@@ -330,17 +353,17 @@ function EmployerViewApplicants() {
             <span>Action</span>
           </div>
           {filteredApplicants.map((app) => (
-            <div key={app.applicationId} className="list-table-row">
+            <div key={app.applicationId || app.id} className="list-table-row">
               <span>
-                <strong>{app.jobSeeker?.firstName || app.candidateName || "N/A"}</strong>
+                <strong>{app.user?.name || app.jobSeeker?.firstName || app.candidateName || "N/A"}</strong>
               </span>
-              <span>{app.jobSeeker?.email || "N/A"}</span>
+              <span>{app.user?.email || app.jobSeeker?.email || "N/A"}</span>
               <span>
                 <span className={`status-badge status-${(app.status || 'PENDING').toLowerCase()}`}>
                   {app.status || 'PENDING'}
                 </span>
               </span>
-              <span>{new Date(app.applicationDate || app.createdAt).toLocaleDateString()}</span>
+              <span>{new Date(app.appliedDate || app.applicationDate || app.createdAt).toLocaleDateString()}</span>
               <span style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
                 <button
                   onClick={() => handleViewApplicantDetails(app)}
@@ -361,8 +384,8 @@ function EmployerViewApplicants() {
                 </button>
                 <select
                   value={app.status || 'PENDING'}
-                  onChange={(e) => handleStatusUpdate(app.applicationId, e.target.value)}
-                  disabled={updatingId === app.applicationId}
+                  onChange={(e) => handleStatusUpdate(app.applicationId || app.id, e.target.value)}
+                  disabled={updatingId === (app.applicationId || app.id)}
                   style={{
                     padding: "6px 10px",
                     borderRadius: "4px",
@@ -469,24 +492,21 @@ function EmployerViewApplicants() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                   <div style={{ padding: "12px", background: "white", borderRadius: "6px" }}>
                     <p style={{ margin: "0 0 6px 0", fontSize: "0.8rem", color: "#999", fontWeight: "600", textTransform: "uppercase" }}>Full Name</p>
-                    <p style={{ margin: 0, color: "#333", fontSize: "1rem", fontWeight: "500" }}>{selectedApplicant.jobSeeker?.firstName || "N/A"} {selectedApplicant.jobSeeker?.lastName || ""}</p>
+                    <p style={{ margin: 0, color: "#333", fontSize: "1rem", fontWeight: "500" }}>{selectedApplicant.user?.name || selectedApplicant.jobSeeker?.firstName || "N/A"}</p>
                   </div>
                   <div style={{ padding: "12px", background: "white", borderRadius: "6px" }}>
                     <p style={{ margin: "0 0 6px 0", fontSize: "0.8rem", color: "#999", fontWeight: "600", textTransform: "uppercase" }}>Email</p>
-                    <p style={{ margin: 0, color: "#333", fontSize: "1rem", fontWeight: "500" }}>{selectedApplicant.jobSeeker?.email || "N/A"}</p>
+                    <p style={{ margin: 0, color: "#333", fontSize: "1rem", fontWeight: "500" }}>{selectedApplicant.user?.email || selectedApplicant.jobSeeker?.email || "N/A"}</p>
                   </div>
-                  <div style={{ padding: "12px", background: "white", borderRadius: "6px" }}>
-                    <p style={{ margin: "0 0 6px 0", fontSize: "0.8rem", color: "#999", fontWeight: "600", textTransform: "uppercase" }}>Phone</p>
-                    <p style={{ margin: 0, color: "#333", fontSize: "1rem", fontWeight: "500" }}>{selectedApplicant.jobSeeker?.phoneNumber || "N/A"}</p>
-                  </div>
+                 
                   <div style={{ padding: "12px", background: "white", borderRadius: "6px" }}>
                     <p style={{ margin: "0 0 6px 0", fontSize: "0.8rem", color: "#999", fontWeight: "600", textTransform: "uppercase" }}>Applied Date</p>
-                    <p style={{ margin: 0, color: "#333", fontSize: "1rem", fontWeight: "500" }}>{new Date(selectedApplicant.applicationDate || selectedApplicant.createdAt).toLocaleDateString()}</p>
+                    <p style={{ margin: 0, color: "#333", fontSize: "1rem", fontWeight: "500" }}>{new Date(selectedApplicant.appliedDate || selectedApplicant.applicationDate || selectedApplicant.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Education & Skills */}
+              {/* Education & Skills
               {selectedApplicant.jobSeeker && (
                 <div style={{
                   marginBottom: "24px",
@@ -509,7 +529,7 @@ function EmployerViewApplicants() {
                     <p style={{ margin: 0, color: "#333", fontSize: "0.95rem" }}>{selectedApplicant.jobSeeker.yearsOfExperience || "Not provided"} years</p>
                   </div>
                 </div>
-              )}
+              )} */}
 
               {/* Resume Section */}
               {selectedApplicant.jobSeeker ? (
@@ -527,38 +547,97 @@ function EmployerViewApplicants() {
                         <p style={{ margin: "0 0 8px 0", fontSize: "0.8rem", color: "#999", fontWeight: "600", textTransform: "uppercase" }}>File Name</p>
                         <p style={{ margin: 0, color: "#333", fontSize: "0.95rem", wordBreak: "break-all" }}>{selectedApplicant.jobSeeker.resumeFile ? selectedApplicant.jobSeeker.resumeFile.split('/').pop() : "N/A"}</p>
                       </div>
-                      <button
-                        onClick={() => handleDownloadResume(selectedApplicant)}
-                        disabled={downloadingResumeId === selectedApplicant.jobSeekerId}
-                        style={{
-                          display: "inline-block",
-                          background: downloadingResumeId === selectedApplicant.jobSeekerId ? "#ccc" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                          color: "white",
-                          padding: "12px 24px",
-                          borderRadius: "6px",
-                          textDecoration: "none",
-                          fontWeight: "600",
-                          border: "none",
-                          cursor: downloadingResumeId === selectedApplicant.jobSeekerId ? "not-allowed" : "pointer",
-                          opacity: downloadingResumeId === selectedApplicant.jobSeekerId ? 0.6 : 1,
-                          transition: "all 0.3s ease",
-                          fontSize: "0.95rem"
-                        }}
-                        onMouseEnter={(e) => {
-                          if (downloadingResumeId !== selectedApplicant.jobSeekerId) {
+                      <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => handleDownloadResume(selectedApplicant)}
+                          disabled={downloadingResumeId === (selectedApplicant.jobSeeker?.jobSeekerId || selectedApplicant.jobSeekerId)}
+                          style={{
+                            display: "inline-block",
+                            background: downloadingResumeId === (selectedApplicant.jobSeeker?.jobSeekerId || selectedApplicant.jobSeekerId) ? "#ccc" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                            color: "white",
+                            padding: "12px 24px",
+                            borderRadius: "6px",
+                            textDecoration: "none",
+                            fontWeight: "600",
+                            border: "none",
+                            cursor: downloadingResumeId === (selectedApplicant.jobSeeker?.jobSeekerId || selectedApplicant.jobSeekerId) ? "not-allowed" : "pointer",
+                            opacity: downloadingResumeId === (selectedApplicant.jobSeeker?.jobSeekerId || selectedApplicant.jobSeekerId) ? 0.6 : 1,
+                            transition: "all 0.3s ease",
+                            fontSize: "0.95rem"
+                          }}
+                          onMouseEnter={(e) => {
+                            if (downloadingResumeId !== selectedApplicant.jobSeekerId) {
+                              e.target.style.transform = "translateY(-2px)";
+                              e.target.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.4)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "none";
+                          }}
+                        >
+                          {downloadingResumeId === (selectedApplicant.jobSeeker?.jobSeekerId || selectedApplicant.jobSeekerId) 
+                            ? "⏳ Downloading..." 
+                            : "⬇️ Download Resume"}
+                        </button>
+                        <button
+                          onClick={async () => {
+                            try {
+                              const token = getToken();
+                              const fileName = selectedApplicant.jobSeeker.resumeFile.split('/').pop();
+                              
+                              // Fetch with proper authorization header
+                              const response = await fetch(
+                                `${API_BASE_URL}/api/files/download?fileName=${encodeURIComponent(fileName)}`,
+                                {
+                                  method: "GET",
+                                  headers: {
+                                    "Authorization": token ? `Bearer ${token}` : undefined,
+                                  },
+                                  credentials: "include",
+                                  mode: "cors"
+                                }
+                              );
+
+                              if (response.ok) {
+                                const blob = await response.blob();
+                                const blobUrl = window.URL.createObjectURL(blob);
+                                window.open(blobUrl, '_blank');
+                                // Clean up the blob URL after a delay
+                                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+                              } else {
+                                setError("Failed to view resume. Please try downloading instead.");
+                              }
+                            } catch (err) {
+                              console.error("Error viewing resume:", err);
+                              setError("Error viewing resume. Please try downloading instead.");
+                            }
+                          }}
+                          style={{
+                            display: "inline-block",
+                            background: "linear-gradient(135deg, #764ba2 0%, #667eea 100%)",
+                            color: "white",
+                            padding: "12px 24px",
+                            borderRadius: "6px",
+                            textDecoration: "none",
+                            fontWeight: "600",
+                            border: "none",
+                            cursor: "pointer",
+                            transition: "all 0.3s ease",
+                            fontSize: "0.95rem"
+                          }}
+                          onMouseEnter={(e) => {
                             e.target.style.transform = "translateY(-2px)";
-                            e.target.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.4)";
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.transform = "translateY(0)";
-                          e.target.style.boxShadow = "none";
-                        }}
-                      >
-                        {downloadingResumeId === selectedApplicant.jobSeekerId 
-                          ? "⏳ Downloading..." 
-                          : "⬇️ Download Resume"}
-                      </button>
+                            e.target.style.boxShadow = "0 4px 12px rgba(118, 75, 162, 0.4)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.transform = "translateY(0)";
+                            e.target.style.boxShadow = "none";
+                          }}
+                        >
+                          👁️ View Resume
+                        </button>
+                      </div>
                     </div>
                   ) : (
                     <div style={{
