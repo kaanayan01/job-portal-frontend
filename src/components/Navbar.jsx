@@ -52,7 +52,7 @@ export default function Navbar(){
         </span>
       ) : (
         <button 
-          onClick={() => navigate('/employer/upgrade')}
+          onClick={() => navigate('/upgrade')}
           style={{
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             padding: '8px 16px',

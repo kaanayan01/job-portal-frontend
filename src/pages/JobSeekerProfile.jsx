@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { apiFetch, API_BASE_URL, getToken } from "../api";
+import { setJobSeeker } from "../store/jobSeekerSlice";
 import "../App.css";
 import "./JobSeekerProfile.css";
 
 function JobSeekerProfile({user, setCurrentPage}) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const reduxUser = useSelector((state) => {
     console.log("useSelector - Full Redux state:", state);
     console.log("useSelector - state.user:", state.user);
@@ -38,6 +40,7 @@ function JobSeekerProfile({user, setCurrentPage}) {
   const [showProfileView, setShowProfileView] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingResume, setIsUploadingResume] = useState(false);
+  const [isNewProfile, setIsNewProfile] = useState(false);
 
   // Initialize userId from effectiveUser when component mounts or user changes
   useEffect(() => {
@@ -58,8 +61,12 @@ function JobSeekerProfile({user, setCurrentPage}) {
     if (jobSeeker && jobSeeker.jobSeekerId) {
       console.log("   Fetching profile with jobSeekerId:", jobSeeker.jobSeekerId);
       fetchProfileData(jobSeeker.jobSeekerId);
+      setIsNewProfile(false);
     } else {
-      console.log("   No jobSeekerId found");
+      console.log("   No jobSeekerId found - this is a new profile");
+      // This is a newly registered user without a profile yet
+      setIsNewProfile(true);
+      setShowProfileView(false); // Show the form for new users
     }
   }, [effectiveUser, reduxUser, user, jobSeeker]);
 
@@ -102,6 +109,12 @@ function JobSeekerProfile({user, setCurrentPage}) {
     // ensure we have a user id before proceeding
     if (!form.userId) {
       setErrorMsg('User not available — please login and try again.');
+      return;
+    }
+
+    // Validate skills are provided
+    if (!form.skills || form.skills.trim() === "") {
+      setErrorMsg('Skills are required. Please add at least one skill.');
       return;
     }
 
@@ -156,17 +169,26 @@ function JobSeekerProfile({user, setCurrentPage}) {
         const message = jobSeekerId ? "Profile updated successfully!" : "Profile created successfully!";
         setSuccessMsg(message);
         
+        // For new profile creation, store the jobSeekerId in Redux
+        if (!jobSeekerId && json.data && json.data.jobSeekerId) {
+          dispatch(setJobSeeker(json.data));
+          setIsNewProfile(false);
+        }
+        
         // Refresh profile data
         if (jobSeekerId) {
           fetchProfileData(jobSeekerId);
+        } else if (json.data && json.data.jobSeekerId) {
+          fetchProfileData(json.data.jobSeekerId);
         }
         
         // Clear form and reset state
         setResumeFile(null);
         
         // If resumeFile was selected, upload it separately
-        if (resumeFile && jobSeekerId) {
-          await handleResumeUpload(jobSeekerId);
+        if (resumeFile && (jobSeekerId || (json.data && json.data.jobSeekerId))) {
+          const seekerId = jobSeekerId || json.data.jobSeekerId;
+          await handleResumeUpload(seekerId);
         } else {
           setTimeout(() => {
             setShowProfileView(true);
@@ -321,18 +343,25 @@ function JobSeekerProfile({user, setCurrentPage}) {
 
       {!showProfileView && (
         <div className="form-shell">
-          <h3>Update Your Profile</h3>
+          {isNewProfile && (
+            <div className="new-profile-prompt">
+              <h3>🎯 Complete Your Profile</h3>
+              <p>Welcome! To start applying for jobs, please complete your profile with your skills and upload your resume.</p>
+            </div>
+          )}
+          <h3>{isNewProfile ? "Create Your Profile" : "Update Your Profile"}</h3>
           {errorMsg && <div className="alert alert-error">{errorMsg}</div>}
           {successMsg && <div className="alert alert-success">{successMsg}</div>}
           <form className="form" onSubmit={handleSubmit}>
             <div className="form-row">
-              <label className="form-label">Skills (comma separated)</label>
+              <label className="form-label">Skills (comma separated) <span className="required">*</span></label>
               <input
                 className="form-input"
                 name="skills"
                 value={form.skills}
                 onChange={handleChange}
                 placeholder="e.g. Java, React, Python"
+                required
               />
             </div>
 

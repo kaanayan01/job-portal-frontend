@@ -8,6 +8,7 @@ function AdminJobs() {
   const [applicantCounts, setApplicantCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,9 +58,36 @@ function AdminJobs() {
     }
   };
 
+  const handleDeleteJob = async (jobId) => {
+    if (!window.confirm("Are you sure you want to delete this job? This action cannot be undone.")) {
+      return;
+    }
+
+    setDeletingId(jobId);
+    try {
+      const response = await apiFetch(`/api/jobs/${jobId}`, {
+        method: "DELETE"
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        // Remove the deleted job from the list
+        setJobs(jobs.filter(job => job.jobId !== jobId));
+        alert("Job deleted successfully!");
+      } else {
+        const errorData = await response.json();
+        alert("Failed to delete job: " + (errorData.message || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      alert("An error occurred while deleting the job.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const filteredJobs = filterStatus === "all" 
-    ? jobs 
-    : jobs.filter(job => job.jobStatus?.toUpperCase() === filterStatus.toUpperCase());
+    ? jobs.filter(job => job.jobStatus?.toUpperCase() !== "DELETED")
+    : jobs.filter(job => job.jobStatus?.toUpperCase() === filterStatus.toUpperCase() && job.jobStatus?.toUpperCase() !== "DELETED");
 
   const getStatusBadgeStyle = (status) => {
     switch(status?.toUpperCase()) {
@@ -160,30 +188,61 @@ function AdminJobs() {
                       {applicantCounts[job.jobId] !== undefined ? applicantCounts[job.jobId] : "..."}
                     </td>
                     <td style={{ padding: "12px", textAlign: "center" }}>
-                      <button
-                        onClick={() => navigate(`/employer/applicants/${job.jobId}`)}
-                        style={{
-                          padding: "8px 16px",
-                          background: "#667eea",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "4px",
-                          cursor: "pointer",
-                          fontSize: "0.9rem",
-                          fontWeight: "600",
-                          transition: "all 0.3s"
-                        }}
-                        onMouseEnter={(e) => {
-                          e.target.style.background = "#5568d3";
-                          e.target.style.transform = "translateY(-2px)";
-                        }}
-                        onMouseLeave={(e) => {
-                          e.target.style.background = "#667eea";
-                          e.target.style.transform = "translateY(0)";
-                        }}
-                      >
-                        View
-                      </button>
+                      <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                        <button
+                          onClick={() => navigate(`/employer/applicants/${job.jobId}`)}
+                          style={{
+                            padding: "8px 16px",
+                            background: "#667eea",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            fontSize: "0.9rem",
+                            fontWeight: "600",
+                            transition: "all 0.3s"
+                          }}
+                          onMouseEnter={(e) => {
+                            e.target.style.background = "#5568d3";
+                            e.target.style.transform = "translateY(-2px)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.target.style.background = "#667eea";
+                            e.target.style.transform = "translateY(0)";
+                          }}
+                        >
+                          View
+                        </button>
+                        <button
+                          onClick={() => handleDeleteJob(job.jobId)}
+                          disabled={deletingId === job.jobId}
+                          style={{
+                            padding: "8px 16px",
+                            background: deletingId === job.jobId ? "#999" : "#dc3545",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "4px",
+                            cursor: deletingId === job.jobId ? "not-allowed" : "pointer",
+                            fontSize: "0.9rem",
+                            fontWeight: "600",
+                            transition: "all 0.3s"
+                          }}
+                          onMouseEnter={(e) => {
+                            if (deletingId !== job.jobId) {
+                              e.target.style.background = "#c82333";
+                              e.target.style.transform = "translateY(-2px)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (deletingId !== job.jobId) {
+                              e.target.style.background = "#dc3545";
+                              e.target.style.transform = "translateY(0)";
+                            }
+                          }}
+                        >
+                          {deletingId === job.jobId ? "Deleting..." : "Delete"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -6,6 +6,8 @@ function AdminPayments() {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const [stats, setStats] = useState({
     totalRevenue: 0,
     successfulPayments: 0,
@@ -15,7 +17,6 @@ function AdminPayments() {
 
   useEffect(() => {
     fetchPayments();
-    fetchStats();
   }, []);
 
   const fetchPayments = async () => {
@@ -25,7 +26,11 @@ function AdminPayments() {
       
       if (response.status === 200) {
         const json = await response.json();
-        setPayments(Array.isArray(json.data) ? json.data : []);
+        const paymentsData = Array.isArray(json.data) ? json.data : [];
+        setPayments(paymentsData);
+        
+        // Calculate stats from the payments data
+        calculateStats(paymentsData);
       }
     } catch (error) {
       console.error("Error fetching payments:", error);
@@ -34,27 +39,46 @@ function AdminPayments() {
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const response = await apiFetch(`/api/admin/analytics`);
-      
-      if (response.status === 200) {
-        const json = await response.json();
-        setStats({
-          totalRevenue: json.data?.totalPayments || 0,
-          successfulPayments: json.data?.successfulPayments || 0,
-          pendingPayments: json.data?.pendingPayments || 0,
-          failedPayments: json.data?.failedPayments || 0
-        });
+  const calculateStats = (paymentsData) => {
+    let totalRevenue = 0;
+    let successfulPayments = 0;
+    let pendingPayments = 0;
+    let failedPayments = 0;
+
+    paymentsData.forEach(payment => {
+      const status = payment.status?.toUpperCase();
+      const amount = payment.amount || 0;
+
+      if (status === "SUCCESS") {
+        totalRevenue += amount;
+        successfulPayments++;
+      } else if (status === "PENDING") {
+        pendingPayments++;
+      } else if (status === "FAILED") {
+        failedPayments++;
       }
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    }
+    });
+
+    setStats({
+      totalRevenue,
+      successfulPayments,
+      pendingPayments,
+      failedPayments
+    });
   };
 
-  const filteredPayments = filterStatus === "all" 
+  const filteredPayments = (filterStatus === "all" 
     ? payments 
-    : payments.filter(p => p.paymentStatus?.toUpperCase() === filterStatus.toUpperCase());
+    : payments.filter(p => p.status?.toUpperCase() === filterStatus.toUpperCase()))
+    .sort((a, b) => {
+      // Sort by paymentId in descending order (highest ID first)
+      return (b.paymentId || 0) - (a.paymentId || 0);
+    });
+
+  const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  const endIdx = startIdx + itemsPerPage;
+  const paginatedPayments = filteredPayments.slice(startIdx, endIdx);
 
   const getStatusBadgeStyle = (status) => {
     switch(status?.toUpperCase()) {
@@ -136,7 +160,7 @@ function AdminPayments() {
             fontWeight: "500"
           }}
         >
-          Pending ({payments.filter(p =>{ console.log(p.status, p.status?.toUpperCase() === "PENDING") ; return p.status?.toUpperCase() === "PENDING" }).length})
+          Pending ({payments.filter(p => p.status?.toUpperCase() === "PENDING").length})
         </button>
         <button
           onClick={() => setFilterStatus("FAILED")}
@@ -157,52 +181,93 @@ function AdminPayments() {
       {loading ? (
         <p>Loading payments...</p>
       ) : (
-        <div style={{ overflowX: "auto" }}>
-          <table className="list-table" style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ background: "#f5f5f5" }}>
-                <th style={{ textAlign: "left", padding: "12px" }}>Payment ID</th>
-                <th style={{ textAlign: "left", padding: "12px" }}>User/Email</th>
-                <th style={{ textAlign: "right", padding: "12px" }}>Amount</th>
-                <th style={{ textAlign: "center", padding: "12px" }}>Status</th>
-                <th style={{ textAlign: "left", padding: "12px" }}>Type</th>
-                <th style={{ textAlign: "left", padding: "12px" }}>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredPayments.length > 0 ? (
-                filteredPayments.map((payment) => (
-                  <tr key={payment.paymentId} style={{ borderBottom: "1px solid #e0e0e0" }}>
-                    <td style={{ padding: "12px", fontWeight: "500" }}>{payment.paymentId}</td>
-                    <td style={{ padding: "12px" }}>{payment.userEmail || payment.userName || "N/A"}</td>
-                    <td style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>₹{payment.amount?.toLocaleString() || "0"}</td>
-                    <td style={{ padding: "12px", textAlign: "center" }}>
-                      <span style={{
-                        padding: "6px 12px",
-                        borderRadius: "20px",
-                        fontSize: "0.85rem",
-                        fontWeight: "600",
-                        ...getStatusBadgeStyle(payment.paymentStatus)
-                      }}>
-                        {payment.paymentStatus || "PENDING"}
-                      </span>
-                    </td>
-                    <td style={{ padding: "12px" }}>{payment.paymentType || "N/A"}</td>
-                    <td style={{ padding: "12px", fontSize: "0.9rem", color: "#666" }}>
-                      {payment.createdAt ? new Date(payment.createdAt).toLocaleDateString() : "N/A"}
+        <>
+          <div style={{ overflowX: "auto" }}>
+            <table className="list-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ background: "#f5f5f5" }}>
+                  <th style={{ textAlign: "left", padding: "12px" }}>Payment ID</th>
+                  <th style={{ textAlign: "right", padding: "12px" }}>Amount</th>
+                  <th style={{ textAlign: "center", padding: "12px" }}>Status</th>
+                  <th style={{ textAlign: "left", padding: "12px" }}>Method</th>
+                  <th style={{ textAlign: "left", padding: "12px" }}>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedPayments.length > 0 ? (
+                  paginatedPayments.map((payment) => (
+                    <tr key={payment.paymentId} style={{ borderBottom: "1px solid #e0e0e0" }}>
+                      <td style={{ padding: "12px", fontWeight: "500" }}>{payment.paymentId}</td>
+                      <td style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>₹{payment.amount?.toLocaleString() || "0"}</td>
+                      <td style={{ padding: "12px", textAlign: "center" }}>
+                        <span style={{
+                          padding: "6px 12px",
+                          borderRadius: "20px",
+                          fontSize: "0.85rem",
+                          fontWeight: "600",
+                          ...getStatusBadgeStyle(payment.status)
+                        }}>
+                          {payment.status || "PENDING"}
+                        </span>
+                      </td>
+                      <td style={{ padding: "12px" }}>{payment.paymentMethod || "N/A"}</td>
+                      <td style={{ padding: "12px", fontSize: "0.9rem", color: "#666" }}>
+                        {payment.paymentDate ? new Date(payment.paymentDate).toLocaleDateString() : "N/A"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr key="no-payments">
+                    <td colSpan="5" style={{ textAlign: "center", padding: "20px", color: "#999" }}>
+                      No payments found
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr key="no-payments">
-                  <td colSpan="6" style={{ textAlign: "center", padding: "20px", color: "#999" }}>
-                    No payments found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "10px", marginTop: "20px" }}>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                style={{
+                  padding: "8px 16px",
+                  background: currentPage === 1 ? "#ccc" : "#667eea",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                  fontWeight: "500"
+                }}
+              >
+                ← Previous
+              </button>
+
+              <div style={{ padding: "8px 12px", fontSize: "0.9rem", fontWeight: "500" }}>
+                Page <span style={{ fontWeight: "bold" }}>{currentPage}</span> of <span style={{ fontWeight: "bold" }}>{totalPages}</span>
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                style={{
+                  padding: "8px 16px",
+                  background: currentPage === totalPages ? "#ccc" : "#667eea",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                  fontWeight: "500"
+                }}
+              >
+                Next →
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

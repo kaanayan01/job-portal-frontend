@@ -7,7 +7,7 @@ function AdminDashboard() {
   const [employees, setEmployees] = useState([]);
   const [pendingEmployers, setPendingEmployers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("employers");
   const [analytics, setAnalytics] = useState({
     totalUsers: 0,
     activeEmployers: 0,
@@ -123,21 +123,6 @@ function AdminDashboard() {
       {/* Tab Navigation */}
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px", borderBottom: "2px solid #e0e0e0", paddingBottom: "10px", flexWrap: "wrap" }}>
         <button
-          onClick={() => setActiveTab("overview")}
-          style={{
-            padding: "10px 20px",
-            background: activeTab === "overview" ? "#667eea" : "#f0f0f0",
-            color: activeTab === "overview" ? "white" : "#333",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            fontWeight: "500",
-            transition: "all 0.3s"
-          }}
-        >
-          📈 Overview
-        </button>
-        <button
           onClick={() => setActiveTab("employers")}
           style={{
             padding: "10px 20px",
@@ -168,7 +153,7 @@ function AdminDashboard() {
           ✅ Approvals ({pendingEmployers.length})
         </button>
         <button
-          onClick={() => navigate("/admin/jobs")}
+          onClick={() => navigate("/jobs")}
           style={{
             padding: "10px 20px",
             background: "#f0f0f0",
@@ -198,39 +183,6 @@ function AdminDashboard() {
           💰 Payments
         </button>
       </div>
-
-      {/* OVERVIEW TAB */}
-      {activeTab === "overview" && (
-        <div>
-          {/* Metrics Section */}
-          <div className="metrics-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px", marginBottom: "30px" }}>
-            <div className="metric-card" style={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
-              <div className="metric-label" style={{ fontSize: "0.9rem", opacity: 0.9 }}>👥 Total Users</div>
-              <div className="metric-value" style={{ fontSize: "2rem", fontWeight: "bold" }}>{analytics.totalUsers}</div>
-            </div>
-            <div className="metric-card" style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
-              <div className="metric-label" style={{ fontSize: "0.9rem", opacity: 0.9 }}>🏢 Active Employers</div>
-              <div className="metric-value" style={{ fontSize: "2rem", fontWeight: "bold" }}>{analytics.activeEmployers}</div>
-            </div>
-            <div className="metric-card" style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
-              <div className="metric-label" style={{ fontSize: "0.9rem", opacity: 0.9 }}>💼 Jobs Posted</div>
-              <div className="metric-value" style={{ fontSize: "2rem", fontWeight: "bold" }}>{analytics.jobsPosted}</div>
-            </div>
-            <div className="metric-card" style={{ background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
-              <div className="metric-label" style={{ fontSize: "0.9rem", opacity: 0.9 }}>💰 Total Revenue (₹)</div>
-              <div className="metric-value" style={{ fontSize: "2rem", fontWeight: "bold" }}>{analytics.totalPayments.toLocaleString()}</div>
-            </div>
-            <div className="metric-card" style={{ background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
-              <div className="metric-label" style={{ fontSize: "0.9rem", opacity: 0.9 }}>⏳ Pending Approvals</div>
-              <div className="metric-value" style={{ fontSize: "2rem", fontWeight: "bold" }}>{analytics.pendingApprovals}</div>
-            </div>
-            <div className="metric-card" style={{ background: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", color: "#333", padding: "20px", borderRadius: "8px" }}>
-              <div className="metric-label" style={{ fontSize: "0.9rem", opacity: 0.9 }}>📋 Total Applications</div>
-              <div className="metric-value" style={{ fontSize: "2rem", fontWeight: "bold" }}>{analytics.totalApplications}</div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* EMPLOYERS TAB */}
       {activeTab === "employers" && (

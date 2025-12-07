@@ -1,9 +1,11 @@
 // src/pages/RegisterPage.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 import "./RegisterPage.css";
 
 function RegisterPage() {
+  const navigate = useNavigate();
   const [role, setRole] = useState("JOB_SEEKER");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -93,7 +95,19 @@ function RegisterPage() {
         return;
       }
 
-      setMessage("Registration successful! Please login with your new account.");
+      setMessage("Registration successful! Redirecting to complete your profile...");
+      
+      // For job seekers, navigate to profile completion page
+      if (role === "JOB_SEEKER") {
+        setTimeout(() => {
+          navigate("/jobseeker/profile");
+        }, 1500);
+      } else {
+        // For employers, navigate to company profile completion
+        setTimeout(() => {
+          navigate("/employer/profile");
+        }, 1500);
+      }
       setName("");
       setEmail("");
       setPassword("");

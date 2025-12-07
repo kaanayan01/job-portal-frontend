@@ -15,23 +15,38 @@ export default function ProtectedRoute({ children, requiredRole }) {
 
   // Check if user has the required role
   const hasAccess = () => {
-    console.log("Checking access for role:", requiredRole);
-    if (requiredRole === "jobseeker") {
-      return jobSeeker && jobSeeker.jobSeekerId;
+    console.log("Checking access for role:", requiredRole, "User type:", user?.userType);
+    
+    if (!user || !user.userType) {
+      return false;
     }
-    if (requiredRole === "employer") {
-      return employer && employer.employerId;
-    }
-    if (requiredRole === "ADMIN") {
-        console.log("Checking admin access for user:", user);
-      return user && user.userType === "ADMIN";
-    }
-    return false;
+    
+    // Support both single role and array of roles
+    const requiredRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    
+    // Normalize user type to lowercase for comparison
+    const userType = user.userType.toLowerCase();
+    
+    return requiredRoles.some(role => {
+      const normalizedRole = role.toLowerCase();
+      
+      // Check if user type matches the required role
+      if (normalizedRole === "jobseeker" || normalizedRole === "job_seeker") {
+        return userType === "job_seeker" || userType === "jobseeker";
+      }
+      if (normalizedRole === "employer") {
+        return userType === "employer";
+      }
+      if (normalizedRole === "admin") {
+        return userType === "admin";
+      }
+      return false;
+    });
   };
 
   // Check if user is logged in at all
   const isLoggedIn = () => {
-    return user || jobSeeker || employer;
+    return user && user.userId;
   };
 
   // Redirect to home if user doesn't have access
