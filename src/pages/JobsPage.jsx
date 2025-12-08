@@ -14,6 +14,7 @@ function JobsPage() {
   // Check if user is a job seeker based on userType from Redux user state
   // This is more reliable on page refresh than checking Redux jobSeeker state
   const isJobSeeker = reduxUser?.userType === 'JOB_SEEKER';
+  const isAdmin = reduxUser?.userType === 'ADMIN';
   
   const [jobs, setJobs] = useState([]);
   const [appliedJobs, setAppliedJobs] = useState(new Map()); // Changed to Map to store status
@@ -27,10 +28,39 @@ function JobsPage() {
   const [withdrawingJobId, setWithdrawingJobId] = useState(null);
   const [activeTab, setActiveTab] = useState("all"); // "all", "applied", "saved"
   const [savingJobId, setSavingJobId] = useState(null);
+  const [deletingJobId, setDeletingJobId] = useState(null);
   const itemsPerPage = 6;
 
   // Check if user is premium
   const isPremium = jobSeeker?.subscriptionType === 'PREMIUM';
+
+  // Admin delete job function
+  const handleDeleteJob = async (jobId) => {
+    if (!window.confirm("Are you sure you want to delete this job? This action cannot be undone.")) {
+      return;
+    }
+
+    setDeletingJobId(jobId);
+    try {
+      const response = await apiFetch(`/api/jobs/${jobId}`, {
+        method: "DELETE"
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        // Remove the deleted job from the list
+        setJobs(jobs.filter(job => job.jobId !== jobId));
+        alert("Job deleted successfully!");
+      } else {
+        const errorData = await response.json();
+        alert("Failed to delete job: " + (errorData.message || "Unknown error"));
+      }
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      alert("An error occurred while deleting the job.");
+    } finally {
+      setDeletingJobId(null);
+    }
+  };
 
   // Handle skill match button click
   const handleSkillMatch = async (jobId) => {
@@ -497,6 +527,58 @@ function JobsPage() {
         </div>
       )}
 
+      {/* Admin Section Info */}
+      {isAdmin && (
+        <div style={{
+          background: "#e3f2fd",
+          border: "1px solid #90caf9",
+          borderRadius: "8px",
+          padding: "12px 16px",
+          marginBottom: "20px",
+          color: "#1565c0"
+        }}>
+          <strong>Admin View:</strong> Viewing all jobs on the platform. You can delete jobs by clicking the delete button.
+        </div>
+      )}
+
+      {/* Job Seeker Profile Warning */}
+      {isJobSeeker && !jobSeeker?.jobSeekerId && (
+        <div style={{
+          background: "#fff3cd",
+          border: "2px solid #ffc107",
+          borderRadius: "8px",
+          padding: "16px",
+          marginBottom: "20px",
+          color: "#856404"
+        }}>
+          <h3 style={{ margin: "0 0 8px 0", color: "#856404" }}>⚠️ Complete Your Profile</h3>
+          <p style={{ margin: "0 0 12px 0", fontSize: "0.95rem" }}>
+            You need to complete your profile before you can apply for jobs. This helps employers understand your skills and experience.
+          </p>
+          <button
+            onClick={() => navigate("/jobseeker/profile")}
+            style={{
+              background: "#ffc107",
+              color: "#333",
+              border: "none",
+              padding: "10px 20px",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "600",
+              transition: "all 0.3s"
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.background = "#e0a800";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.background = "#ffc107";
+            }}
+          >
+            → Go to Profile
+          </button>
+        </div>
+      )}
+
       {/* Search Bar */}
       <div className="search-section">
         <input
@@ -579,6 +661,30 @@ function JobsPage() {
                       ❌ Position Closed
                     </button>
                   ) : isJobSeeker ? (
+                    <>
+                      {!jobSeeker?.jobSeekerId ? (
+                        <button
+                          className="apply-btn inactive"
+                          disabled
+                          title="Complete your profile first to apply for jobs"
+                          onClick={() => navigate("/jobseeker/profile")}
+                          style={{ opacity: 0.6, cursor: "not-allowed" }}
+                        >
+                          📋 Complete Profile First
+                        </button>
+                      ) : (
+                        <button
+                          className="apply-btn"
+                          onClick={() => {
+                            localStorage.setItem("selectedJob", JSON.stringify(job));
+                            navigate(`/job/${job.jobId}`);
+                          }}
+                        >
+                          View Details
+                        </button>
+                      )}
+                    </>
+                  ) : isAdmin ? (
                     <button
                       className="apply-btn"
                       onClick={() => {
@@ -604,9 +710,15 @@ function JobsPage() {
                   {isJobSeeker && (
                     <button
                       className={`save-job-btn ${savedJobs.has(job.jobId) ? "saved" : ""}`}
-                      onClick={() => handleToggleSaveJob(job.jobId)}
-                      disabled={savingJobId === job.jobId}
-                      title={savedJobs.has(job.jobId) ? "Remove from saved jobs" : "Save this job"}
+                      onClick={() => {
+                        if (!jobSeeker?.jobSeekerId) {
+                          navigate("/jobseeker/profile");
+                          return;
+                        }
+                        handleToggleSaveJob(job.jobId);
+                      }}
+                      disabled={savingJobId === job.jobId || !jobSeeker?.jobSeekerId}
+                      title={!jobSeeker?.jobSeekerId ? "Complete your profile first" : (savedJobs.has(job.jobId) ? "Remove from saved jobs" : "Save this job")}
                     >
                       {savingJobId === job.jobId ? "..." : savedJobs.has(job.jobId) ? "★ Saved" : "☆ Save"}
                     </button>
@@ -619,6 +731,23 @@ function JobsPage() {
                       disabled={skillMatchLoading}
                     >
                       {skillMatchLoading ? "Checking..." : "⭐ Skill Match"}
+                    </button>
+                  )}
+
+                  {/* Delete button - only for admins */}
+                  {isAdmin && (
+                    <button
+                      className="apply-btn"
+                      style={{
+                        background: deletingJobId === job.jobId ? "#999" : "#dc3545",
+                        cursor: deletingJobId === job.jobId ? "not-allowed" : "pointer",
+                        marginLeft: "8px"
+                      }}
+                      onClick={() => handleDeleteJob(job.jobId)}
+                      disabled={deletingJobId === job.jobId}
+                      title="Delete this job"
+                    >
+                      {deletingJobId === job.jobId ? "Deleting..." : "🗑️ Delete"}
                     </button>
                   )}
                 </div>

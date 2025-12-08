@@ -20,6 +20,28 @@
   padding: 12px 8px 20px 8px;
 }
 
+.new-profile-prompt {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.new-profile-prompt h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.new-profile-prompt p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
 .alert {
   padding: 10px 12px;
   border-radius: 6px;
@@ -62,6 +84,12 @@
   margin-bottom: 6px;
   font-weight: 600;
   color: #333;
+}
+
+.form-label .required {
+  color: #d32f2f;
+  font-weight: 700;
+  margin-left: 2px;
 }
 
 .form-input {

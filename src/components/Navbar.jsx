@@ -37,63 +37,38 @@ export default function Navbar(){
        <NavLink to="/employer/jobs" className={({isActive})=>isActive?'nav-link active jobs-btn':'nav-link jobs-btn'}>Jobs</NavLink>
      </>}
      {isLoggedIn && <>
-      {/* Admin Dashboard Button for Admin Users
-      {reduxUser?.userType === 'ADMIN' && (
-        <NavLink 
-          to="/admin/dashboard" 
-          className={({isActive})=>isActive?'nav-link active':'nav-link'}
+      
+      {/* Premium Badge or Upgrade Button */}
+      {isPremium ? (
+        <span style={{
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          padding: '6px 12px',
+          borderRadius: '20px',
+          fontSize: '0.85rem',
+          fontWeight: 'bold',
+          color: '#fff'
+        }}>
+          ✨ Premium
+        </span>
+      ) : (
+        <button 
+          onClick={() => navigate('/upgrade')}
           style={{
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             padding: '8px 16px',
             borderRadius: '20px',
+            border: 'none',
             color: '#fff',
             fontWeight: 'bold',
-            textDecoration: 'none',
+            cursor: 'pointer',
             fontSize: '0.9rem',
             transition: 'transform 0.2s ease'
           }}
           onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
           onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
         >
-          Admin Dashboard
-        </NavLink>
-      )} */}
-      
-      {/* Premium Badge or Upgrade Button - Only for non-admin users */}
-      {reduxUser?.userType !== 'ADMIN' && (
-        <>
-          {isPremium ? (
-            <span style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              padding: '6px 12px',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              fontWeight: 'bold',
-              color: '#fff'
-            }}>
-              ✨ Premium
-            </span>
-          ) : (
-            <button 
-              onClick={() => navigate('/employer/upgrade')}
-              style={{
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                padding: '8px 16px',
-                borderRadius: '20px',
-                border: 'none',
-                color: '#fff',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-                transition: 'transform 0.2s ease'
-              }}
-              onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-              onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-            >
-              Upgrade
-            </button>
-          )}
-        </>
+          Upgrade
+        </button>
       )}
       
       <button onClick={()=>{logout();navigate('/');}} className="logout-btn">Logout</button>

@@ -1,9 +1,11 @@
 // src/pages/RegisterPage.jsx
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 import "./RegisterPage.css";
 
 function RegisterPage() {
+  const navigate = useNavigate();
   const [role, setRole] = useState("JOB_SEEKER");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -67,6 +69,45 @@ function RegisterPage() {
         return false;
       };
 
+      // If server returned 400 (Bad Request), show backend message if available
+      if (res.status === 400) {
+        // First check for errors object with field-specific messages
+        if (json.errors && typeof json.errors === "object" && !Array.isArray(json.errors)) {
+          const errorMsgs = Object.values(json.errors).filter(Boolean);
+          if (errorMsgs.length) {
+            setError(errorMsgs.join(' '));
+            return;
+          }
+        }
+        // Then check for errors array
+        if (json.errors && Array.isArray(json.errors) && json.errors.length > 0) {
+          const errorMsgs = json.errors.map(e => typeof e === "string" ? e : e.message || e).filter(Boolean);
+          if (errorMsgs.length) {
+            setError(errorMsgs.join(' '));
+            return;
+          }
+        }
+        // Then check for message
+        if (json.message) {
+          setError(json.message);
+          return;
+        }
+        // Then check for error
+        if (json.error) {
+          setError(json.error);
+          return;
+        }
+        // Extract validation messages
+        const validationMsgs = extractValidationMessages(json);
+        if (validationMsgs.length) {
+          setError(validationMsgs.join(' '));
+          return;
+        }
+        // Fallback message
+        setError('Invalid input. Please check your details and try again.');
+        return;
+      }
+
       // If server returned non-2xx, prefer showing validation messages but never raw backend message
       if (!res.ok) {
         if (isDuplicateEmail()) {
@@ -93,7 +134,19 @@ function RegisterPage() {
         return;
       }
 
-      setMessage("Registration successful! Please login with your new account.");
+      setMessage("Registration successful! Redirecting to complete your profile...");
+      
+      // For job seekers, navigate to profile completion page
+      if (role === "JOB_SEEKER") {
+        setTimeout(() => {
+          navigate("/jobseeker/profile");
+        }, 1500);
+      } else {
+        // For employers, navigate to company profile completion
+        setTimeout(() => {
+          navigate("/employer/profile");
+        }, 1500);
+      }
       setName("");
       setEmail("");
       setPassword("");

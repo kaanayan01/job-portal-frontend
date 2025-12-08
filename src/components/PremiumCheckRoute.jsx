@@ -45,8 +45,8 @@ export default function PremiumCheckRoute({ children }) {
       <div className="premium-check-container">
         <div className="premium-message-card">
           <div className="premium-icon">✨</div>
-          <h2>You're Already Premium!</h2>
-          <p>Your account has already been upgraded to a premium subscription.</p>
+          <h2>You're Premium now!</h2>
+          <p>Your account has been upgraded to a premium subscription.</p>
           <div className="premium-details">
             <p className="detail-text">
               {jobSeeker && "You have access to all premium features as a job seeker."}

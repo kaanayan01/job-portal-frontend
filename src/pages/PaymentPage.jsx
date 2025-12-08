@@ -276,9 +276,15 @@ export default function PaymentPage() {
           }
 
           setMessage("✓ Payment processed successfully!");
-          // Redirect to subscriptions page after 2 seconds
+          // Redirect to appropriate page based on user type after 2 seconds
           setTimeout(() => {
-            navigate("/employer/upgrade");
+            if (userType === "EMPLOYER") {
+              navigate("/employer/jobs");
+            } else if (userType === "JOB_SEEKER") {
+              navigate("/jobs");
+            } else {
+              navigate("/");
+            }
           }, 2000);
         } else {
           setError("✕ Payment processing failed. Please try again.");
