@@ -1,0 +1,289 @@
+import React, { useState, useEffect } from "react";
+import { apiFetch } from "../api";
+import BackToDashboardButton from "../components/BackToDashboardButton";
+import "../App.css";
+
+function AdminPayments() {
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [stats, setStats] = useState({
+    totalRevenue: 0,
+    successfulPayments: 0,
+    pendingPayments: 0,
+    failedPayments: 0
+  });
+
+  const fetchPaymentsByStatus = async (status) => {
+    try {
+      setLoading(true);
+      const endpoint = status === "SUCCESS"
+        ? `/api/admins/payments/success`
+        : `/api/admins/payments`;
+      
+      const response = await apiFetch(endpoint);
+      
+      if (response.status === 200) {
+        const json = await response.json();
+        setPayments(Array.isArray(json.data) ? json.data : []);
+      }
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPayments();
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    if (filterStatus === "SUCCESS") {
+      fetchPaymentsByStatus("SUCCESS");
+    } else {
+      fetchPayments();
+    }
+  }, [filterStatus]);
+
+  const fetchPayments = async () => {
+    try {
+      setLoading(true);
+      const response = await apiFetch(`/api/admins/payments`);
+      console.log("Payments Response Status:", response.status);
+      
+      if (response.status === 200) {
+        const json = await response.json();
+        console.log("Payments Response JSON:", json);
+        const paymentsList = Array.isArray(json.data) ? json.data : (Array.isArray(json) ? json : []);
+        console.log("Payments fetched:", paymentsList.length);
+        console.log("Sample payment:", paymentsList[0]);
+        setPayments(paymentsList);
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch payments:", response.status, errorText);
+        setPayments([]);
+        if (response.status !== 401 && response.status !== 403) {
+          alert(`Failed to fetch payments: ${response.status} - ${errorText}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching payments:", error);
+      setPayments([]);
+      alert(`Error fetching payments: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await apiFetch(`/api/admins/payments/stats`);
+      
+      if (response.status === 200) {
+        const json = await response.json();
+        const statsData = json.data || json;
+        console.log("Payment stats:", statsData);
+        setStats({
+          totalRevenue: typeof statsData.totalRevenue === 'number' 
+            ? statsData.totalRevenue 
+            : (typeof statsData.totalRevenue === 'string' ? parseFloat(statsData.totalRevenue) : 0) || 0,
+          successfulPayments: statsData.successfulPayments || statsData.successCount || statsData.successPayments || 0,
+          pendingPayments: statsData.pendingPayments || statsData.pendingCount || 0,
+          failedPayments: statsData.failedPayments || statsData.failedCount || 0
+        });
+      } else {
+        const errorText = await response.text();
+        console.error("Failed to fetch payment stats:", response.status, errorText);
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
+  const filteredPayments = filterStatus === "all" 
+    ? payments 
+    : payments.filter(p => (p.paymentStatus || p.status)?.toUpperCase() === filterStatus.toUpperCase());
+
+  const getStatusBadgeStyle = (status) => {
+    switch(status?.toUpperCase()) {
+      case "SUCCESS":
+        return { background: "#d4edda", color: "#155724" };
+      case "PENDING":
+        return { background: "#fff3cd", color: "#856404" };
+      case "FAILED":
+        return { background: "#f8d7da", color: "#721c24" };
+      default:
+        return { background: "#e2e3e5", color: "#383d41" };
+    }
+  };
+
+  return (
+    <div className="main-container">
+      <BackToDashboardButton />
+      <h2>💰 Payment Management</h2>
+      <p className="section-subtitle">Track all payment transactions and subscription revenue</p>
+
+      {/* Metrics */}
+      <div className="metrics-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "20px", marginBottom: "30px" }}>
+        <div style={{ background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
+          <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>💰 Total Revenue</div>
+          <div style={{ fontSize: "2rem", fontWeight: "bold" }}>
+            ₹{typeof stats.totalRevenue === 'number' 
+              ? stats.totalRevenue.toLocaleString() 
+              : (typeof stats.totalRevenue === 'string' ? parseFloat(stats.totalRevenue).toLocaleString() : '0')}
+          </div>
+        </div>
+        <div style={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
+          <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>✅ Successful</div>
+          <div style={{ fontSize: "2rem", fontWeight: "bold" }}>{stats.successfulPayments}</div>
+        </div>
+        <div style={{ background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
+          <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>⏳ Pending</div>
+          <div style={{ fontSize: "2rem", fontWeight: "bold" }}>{stats.pendingPayments}</div>
+        </div>
+        <div style={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", color: "white", padding: "20px", borderRadius: "8px" }}>
+          <div style={{ fontSize: "0.9rem", opacity: 0.9 }}>❌ Failed</div>
+          <div style={{ fontSize: "2rem", fontWeight: "bold" }}>{stats.failedPayments}</div>
+        </div>
+      </div>
+
+      {/* Filter Buttons */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
+        <button
+          onClick={() => setFilterStatus("all")}
+          style={{
+            padding: "10px 20px",
+            background: filterStatus === "all" ? "#667eea" : "#f0f0f0",
+            color: filterStatus === "all" ? "white" : "#333",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "500"
+          }}
+        >
+          All ({payments.length})
+        </button>
+        <button
+          onClick={() => setFilterStatus("SUCCESS")}
+          style={{
+            padding: "10px 20px",
+            background: filterStatus === "SUCCESS" ? "#28a745" : "#f0f0f0",
+            color: filterStatus === "SUCCESS" ? "white" : "#333",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "500"
+          }}
+        >
+          Success ({payments.filter(p => (p.paymentStatus || p.status)?.toUpperCase() === "SUCCESS").length})
+        </button>
+        <button
+          onClick={() => setFilterStatus("PENDING")}
+          style={{
+            padding: "10px 20px",
+            background: filterStatus === "PENDING" ? "#ffc107" : "#f0f0f0",
+            color: filterStatus === "PENDING" ? "white" : "#333",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "500"
+          }}
+        >
+          Pending ({payments.filter(p => (p.paymentStatus || p.status)?.toUpperCase() === "PENDING").length})
+        </button>
+        <button
+          onClick={() => setFilterStatus("FAILED")}
+          style={{
+            padding: "10px 20px",
+            background: filterStatus === "FAILED" ? "#dc3545" : "#f0f0f0",
+            color: filterStatus === "FAILED" ? "white" : "#333",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontWeight: "500"
+          }}
+        >
+          Failed ({payments.filter(p => (p.paymentStatus || p.status)?.toUpperCase() === "FAILED").length})
+        </button>
+      </div>
+
+      {loading ? (
+        <p>Loading payments...</p>
+      ) : (
+        <div style={{ overflowX: "auto" }}>
+          <table className="list-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+            <thead>
+              <tr style={{ background: "#f5f5f5" }}>
+                <th style={{ textAlign: "left", padding: "12px" }}>Payment ID</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>User ID</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>User Name/Email</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Subscription ID</th>
+                <th style={{ textAlign: "right", padding: "12px" }}>Amount</th>
+                <th style={{ textAlign: "center", padding: "12px" }}>Payment Method</th>
+                <th style={{ textAlign: "center", padding: "12px" }}>Status</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Order ID</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Transaction ID</th>
+                <th style={{ textAlign: "left", padding: "12px" }}>Payment Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPayments.length > 0 ? (
+                filteredPayments.map((payment) => (
+                  <tr key={payment.paymentId} style={{ borderBottom: "1px solid #e0e0e0" }}>
+                    <td style={{ padding: "12px", fontWeight: "500" }}>{payment.paymentId}</td>
+                    <td style={{ padding: "12px" }}>{payment.userId || "N/A"}</td>
+                    <td style={{ padding: "12px" }}>{payment.userEmail || payment.userName || payment.name || "N/A"}</td>
+                    <td style={{ padding: "12px" }}>{payment.subscriptionId || "N/A"}</td>
+                    <td style={{ padding: "12px", textAlign: "right", fontWeight: "600" }}>₹{payment.amount ? (typeof payment.amount === 'number' ? payment.amount.toLocaleString() : parseFloat(payment.amount).toLocaleString()) : "0"}</td>
+                    <td style={{ padding: "12px", textAlign: "center" }}>
+                      <span style={{
+                        padding: "4px 10px",
+                        borderRadius: "12px",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        background: "#e3f2fd",
+                        color: "#1976d2"
+                      }}>
+                        {payment.paymentMethod || payment.paymentType || "N/A"}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px", textAlign: "center" }}>
+                      <span style={{
+                        padding: "6px 12px",
+                        borderRadius: "20px",
+                        fontSize: "0.85rem",
+                        fontWeight: "600",
+                        ...getStatusBadgeStyle(payment.paymentStatus || payment.status)
+                      }}>
+                        {payment.paymentStatus || payment.status || "PENDING"}
+                      </span>
+                    </td>
+                    <td style={{ padding: "12px", fontSize: "0.85rem", color: "#666" }}>{payment.orderId || "N/A"}</td>
+                    <td style={{ padding: "12px", fontSize: "0.85rem", color: "#666" }}>{payment.transactionId || "N/A"}</td>
+                    <td style={{ padding: "12px", fontSize: "0.9rem", color: "#666" }}>
+                      {payment.paymentDate 
+                        ? new Date(payment.paymentDate).toLocaleDateString() 
+                        : payment.createdAt 
+                        ? new Date(payment.createdAt).toLocaleDateString() 
+                        : "N/A"}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr key="no-payments">
+                  <td colSpan="10" style={{ textAlign: "center", padding: "20px", color: "#999" }}>
+                    No payments found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default AdminPayments;

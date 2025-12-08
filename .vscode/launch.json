@@ -1,0 +1,15 @@
+
+{
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "msedge", // or "pwa-chrome" if you use Chrome
+        "request": "launch",
+        "name": "Debug React App in Edge",
+        "url": "http://localhost:3000",
+        "webRoot": "${workspaceFolder}/src",
+        "sourceMaps": true
+      }
+    ]
+  }
+  

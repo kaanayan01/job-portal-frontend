@@ -1,0 +1,316 @@
+.applications-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: calc(100vh - 200px);
+  background: #f8f9fa;
+}
+
+.applications-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.applications-header h1 {
+  font-size: 2.5rem;
+  color: #1a1a1a;
+  margin: 0 0 10px 0;
+  font-weight: 700;
+}
+
+.applications-count {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+/* Applications Grid */
+.applications-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+/* Application Card */
+.application-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0e0e0;
+}
+
+.application-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: #667eea;
+}
+
+/* Card Header */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.job-title {
+  font-size: 1.3rem;
+  color: #1a1a1a;
+  margin: 0;
+  font-weight: 700;
+  flex: 1;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeeba;
+}
+
+.status-accepted {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-rejected {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-shortlisted {
+  background: #e7f3ff;
+  color: #004085;
+  border: 1px solid #b8daff;
+}
+
+.status-interview {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+/* Card Details */
+.card-details {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e8e8e8;
+  flex: 1;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  color: #666;
+  font-weight: 600;
+}
+
+.detail-value {
+  color: #333;
+  text-align: right;
+  flex: 1;
+  margin-left: 12px;
+}
+
+/* Card Footer */
+.card-footer {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr;
+  gap: 12px;
+  margin-top: auto;
+  width: 100%;
+}
+
+.view-job-btn {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: all 0.3s ease;
+  display: block;
+}
+
+.view-job-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.withdraw-btn {
+  padding: 10px 16px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.withdraw-btn:hover {
+  background: #c82333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.withdraw-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.6;
+  color: #666;
+}
+
+/* No Applications State */
+.no-applications {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: 12px;
+  border: 2px dashed #ddd;
+}
+
+.no-applications p {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 10px 0;
+}
+
+.no-applications p:first-child {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.explore-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.explore-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+/* Loading and Error States */
+.loading,
+.error {
+  text-align: center;
+  font-size: 1.1rem;
+  padding: 40px 20px;
+  border-radius: 12px;
+}
+
+.loading {
+  color: #667eea;
+  background: #e3f2fd;
+}
+
+.error {
+  color: #c0392b;
+  background: #fadbd8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .applications-container {
+    padding: 20px 12px;
+  }
+
+  .applications-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .applications-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .application-card {
+    padding: 16px;
+  }
+
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .status-badge {
+    align-self: flex-start;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detail-value {
+    text-align: left;
+    margin-left: 0;
+  }
+
+  .view-job-btn {
+    padding: 12px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .applications-container {
+    padding: 15px 10px;
+  }
+
+  .applications-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .application-card {
+    padding: 12px;
+  }
+
+  .job-title {
+    font-size: 1.1rem;
+  }
+
+  .detail-row {
+    font-size: 0.9rem;
+  }
+}
