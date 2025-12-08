@@ -88,7 +88,7 @@ function JobsPage() {
       const data = await response.json();
       console.log("Skill Match API Response:", data);
 
-      if (data.status === 200) {
+      if (response.status === 200 || response.ok || data.status === 200) {
         // Extract percentage from response data - keep as is from backend
         const matchPercentage = data.data?.matchPercentage !== undefined 
           ? data.data.matchPercentage 
@@ -255,7 +255,8 @@ function JobsPage() {
         const appliedJobMap = new Map();
         json.data.forEach(app => {
           const jobId = app.job?.jobId || app.jobId;
-          const status = app.status || "PENDING";
+          // Handle ApplicationDTO structure (app.application.status) or direct status
+          const status = app.application?.status || app.status || "APPLIED";
           appliedJobMap.set(jobId, status);
         });
         setAppliedJobs(appliedJobMap);
@@ -442,10 +443,11 @@ function JobsPage() {
           // Handle different response formats
           let jobsData = [];
           
-          if (json.data && Array.isArray(json.data)) {
-            jobsData = json.data;
-          } else if (json.data && Array.isArray(json.data.jobPosts)) {
+          // Backend returns JobPostPageDTO which has jobPosts array
+          if (json.data && json.data.jobPosts && Array.isArray(json.data.jobPosts)) {
             jobsData = json.data.jobPosts;
+          } else if (json.data && Array.isArray(json.data)) {
+            jobsData = json.data;
           } else if (Array.isArray(json)) {
             jobsData = json;
           }
@@ -619,9 +621,9 @@ function JobsPage() {
                 {/* Applied Badge with Status and Withdraw */}
                 {isApplied && (
                   <div className="applied-badge-container">
-                    <div className={`applied-badge status-${applicationStatus?.toLowerCase() || 'pending'}`}>
+                    <div className={`applied-badge status-${applicationStatus?.toLowerCase() || 'applied'}`}>
                       <span className="badge-icon">✓</span>
-                      <span className="badge-text">{applicationStatus || "PENDING"}</span>
+                      <span className="badge-text">{applicationStatus || "APPLIED"}</span>
                     </div>
                     <button
                       className="withdraw-badge-btn"

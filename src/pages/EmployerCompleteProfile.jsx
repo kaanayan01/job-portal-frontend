@@ -245,7 +245,6 @@ export default function EmployerCompanyProfile() {
       // Step 2: Save or Update Company Profile
       const companyProfileData = {
         profileId: companyProfileId,
-        userId: form.userId,
         employerId: employerId,
         companyName: form.company_name,
         industry: form.industry,

@@ -234,8 +234,6 @@ function EmployerCreateJob({ setCurrentPage }) {
             >
               <option value="FULL_TIME">Full Time</option>
               <option value="PART_TIME">Part Time</option>
-              <option value="CONTRACT">Contract</option>
-              <option value="TEMPORARY">Temporary</option>
               <option value="INTERNSHIP">Internship</option>
             </select>
           </div>
@@ -252,7 +250,7 @@ function EmployerCreateJob({ setCurrentPage }) {
             >
               <option value="ACTIVE">Active</option>
               <option value="INACTIVE">Inactive</option>
-              <option value="CLOSED">Closed</option>
+              <option value="DELETED">Deleted</option>
             </select>
           </div>
 

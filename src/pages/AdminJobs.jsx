@@ -123,7 +123,7 @@ function AdminJobs() {
         return { background: "#d4edda", color: "#155724" };
       case "INACTIVE":
         return { background: "#f8d7da", color: "#721c24" };
-      case "CLOSED":
+      case "DELETED":
         return { background: "#d1ecf1", color: "#0c5460" };
       default:
         return { background: "#e2e3e5", color: "#383d41" };

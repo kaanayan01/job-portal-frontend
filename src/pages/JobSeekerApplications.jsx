@@ -120,8 +120,8 @@ function JobSeekerApplications() {
             <div key={app.applicationId} className="application-card">
               <div className="card-header">
                 <h3 className="job-title">{app.job?.title || "Job Title"}</h3>
-                <span className={`status-badge status-${(app.status || "PENDING").toLowerCase()}`}>
-                  {app.status || "PENDING"}
+                <span className={`status-badge status-${(app.status || "APPLIED").toLowerCase()}`}>
+                  {app.status || "APPLIED"}
                 </span>
               </div>
 

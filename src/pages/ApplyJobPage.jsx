@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { apiFetch } from "../api";
+import { apiFetch, getToken } from "../api";
 import "../App.css";
 import { useReduxJobSeeker } from "../hooks/useReduxUser";
 
@@ -58,23 +58,24 @@ function ApplyJobPage(){
       console.log('------------'+jobSeekerId);
       console.log('------------'+jobId);
 
+      const token = getToken();
       const res = await apiFetch("/api/applications", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`, 
+          Authorization: token ? `Bearer ${token}` : undefined, 
         },
         body: JSON.stringify({
             jobSeekerId,
-           jobId
-    
+            jobId,
+            coverLetter: form.coverletter || ""
         }),
       });
 
       const json = await res.json();
-      console.log("Register response:", json);
+      console.log("Application response:", json);
 
-      if ( json.status === 200) {
+      if (res.status === 200 || res.status === 201 || (json.status === 200 && res.ok)) {
         // Increment application count on successful submission
         if (!isPremium) {
           incrementTodayApplicationCount();
@@ -86,8 +87,9 @@ function ApplyJobPage(){
         navigate("/jobs");
         return;
       }
-      console.log(json.message);
-      alert("Cannot apply to the same job twice");
+      
+      const errorMessage = json.message || "Failed to submit application. Please try again.";
+      alert(errorMessage);
 
      
     } catch (err) {

@@ -142,7 +142,7 @@ function EmployerViewApplicants() {
       console.log("Fetching job seeker details for ID:", jobSeekerId);
       
       // Fetch complete job seeker details
-      const res = await apiFetch(`/api/job-seekers/${jobSeekerId}`);
+      const res = await apiFetch(`/api/jobseekers/${jobSeekerId}`);
       
       if (res.status === 200) {
         const json = await res.json();
@@ -311,7 +311,7 @@ function EmployerViewApplicants() {
         >
           All ({applicants.length})
         </button>
-        {["PENDING", "APPLIED", "REVIEWED", "SHORTLISTED", "REJECTED", "SELECTED"].map(status => {
+        {["APPLIED", "REVIEWED", "SHORTLISTED", "REJECTED", "SELECTED"].map(status => {
           const count = applicants.filter(a => a.status?.toUpperCase() === status).length;
           return (
             <button 
@@ -359,8 +359,8 @@ function EmployerViewApplicants() {
               </span>
               <span>{app.user?.email || app.jobSeeker?.email || "N/A"}</span>
               <span>
-                <span className={`status-badge status-${(app.status || 'PENDING').toLowerCase()}`}>
-                  {app.status || 'PENDING'}
+                <span className={`status-badge status-${(app.status || 'APPLIED').toLowerCase()}`}>
+                  {app.status || 'APPLIED'}
                 </span>
               </span>
               <span>{new Date(app.appliedDate || app.applicationDate || app.createdAt).toLocaleDateString()}</span>
@@ -383,7 +383,7 @@ function EmployerViewApplicants() {
                   👤 Info
                 </button>
                 <select
-                  value={app.status || 'PENDING'}
+                  value={app.status || 'APPLIED'}
                   onChange={(e) => handleStatusUpdate(app.applicationId || app.id, e.target.value)}
                   disabled={updatingId === (app.applicationId || app.id)}
                   style={{
@@ -394,7 +394,6 @@ function EmployerViewApplicants() {
                     fontSize: "0.85rem"
                   }}
                 >
-                  <option value="PENDING">Pending</option>
                   <option value="APPLIED">Applied</option>
                   <option value="REVIEWED">Reviewed</option>
                   <option value="SHORTLISTED">Shortlisted</option>
@@ -663,7 +662,7 @@ function EmployerViewApplicants() {
               }}>
                 <h3 style={{ margin: "0 0 16px 0", color: "#333", fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "8px" }}>📊 Application Status</h3>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-                  <span className={`status-badge status-${(selectedApplicant.status || 'PENDING').toLowerCase()}`}
+                  <span className={`status-badge status-${(selectedApplicant.status || 'APPLIED').toLowerCase()}`}
                     style={{
                       padding: "8px 16px",
                       borderRadius: "20px",
@@ -671,10 +670,10 @@ function EmployerViewApplicants() {
                       fontSize: "0.9rem"
                     }}
                   >
-                    {selectedApplicant.status || 'PENDING'}
+                    {selectedApplicant.status || 'APPLIED'}
                   </span>
                   <select
-                    value={selectedApplicant.status || 'PENDING'}
+                    value={selectedApplicant.status || 'APPLIED'}
                     onChange={(e) => {
                       handleStatusUpdate(selectedApplicant.applicationId, e.target.value);
                     }}
@@ -688,7 +687,6 @@ function EmployerViewApplicants() {
                       minWidth: "180px"
                     }}
                   >
-                    <option value="PENDING">Pending</option>
                     <option value="APPLIED">Applied</option>
                     <option value="REVIEWED">Reviewed</option>
                     <option value="SHORTLISTED">Shortlisted</option>
