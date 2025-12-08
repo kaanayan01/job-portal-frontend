@@ -140,7 +140,7 @@ function AdminReports() {
   return (
     <div className="main-container">
       <BackToDashboardButton />
-      <h2>📊 Reports & Analytics</h2>
+      <h2>📊 Analytics</h2>
       <p className="section-subtitle">Comprehensive analytics and reporting dashboard</p>
 
       {/* Tab Navigation */}
@@ -201,7 +201,7 @@ function AdminReports() {
         >
           👥 Users
         </button>
-        <button
+        {/* <button
           onClick={() => setActiveTab("reports")}
           style={{
             padding: "10px 20px",
@@ -213,8 +213,8 @@ function AdminReports() {
             fontWeight: "500"
           }}
         >
-          📄 Generated Reports ({reports.length})
-        </button>
+           Generated Reports ({reports.length})
+        </button> */}
       </div>
 
       {loading ? (

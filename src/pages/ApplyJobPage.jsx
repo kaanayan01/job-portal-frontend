@@ -44,7 +44,7 @@ function ApplyJobPage(){
     if (!isPremium) {
       const todayCount = getTodayApplicationCount();
       if (todayCount >= 5) {
-        alert("❌ You've reached your daily application limit (5 per day). Upgrade to Premium for unlimited applications!");
+        alert(" You've reached your daily application limit (5 per day). Upgrade to Premium for unlimited applications!");
         return;
       }
     }

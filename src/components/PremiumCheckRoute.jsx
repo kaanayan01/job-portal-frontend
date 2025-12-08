@@ -58,7 +58,7 @@ export default function PremiumCheckRoute({ children }) {
               className="btn-go-dashboard"
               onClick={() => {
                 if (jobSeeker) {
-                  navigate("/jobseeker/dashboard");
+                  navigate("/jobs");
                 } else if (employer) {
                   navigate("/employer/dashboard");
                 } else {

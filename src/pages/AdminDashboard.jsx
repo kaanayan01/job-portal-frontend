@@ -258,7 +258,7 @@ function AdminDashboard() {
             transition: "all 0.3s"
           }}
         >
-          📊 Reports
+          📊 Analytics
         </button>
       </div>
 

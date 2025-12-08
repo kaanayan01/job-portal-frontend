@@ -37,7 +37,7 @@ export default function Navbar(){
        <NavLink to="/employer/jobs" className={({isActive})=>isActive?'nav-link active jobs-btn':'nav-link jobs-btn'}>Jobs</NavLink>
      </>}
      {isLoggedIn && <>
-      
+       { reduxUser?.userType !== 'ADMIN' && <>
       {/* Premium Badge or Upgrade Button */}
       {isPremium ? (
         <span style={{
@@ -70,6 +70,7 @@ export default function Navbar(){
           Upgrade
         </button>
       )}
+    </>}
       
       <button onClick={()=>{logout();navigate('/');}} className="logout-btn">Logout</button>
      </>

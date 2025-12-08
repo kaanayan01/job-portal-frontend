@@ -166,7 +166,7 @@ function AdminPremiumUsers() {
                     <th style={{ textAlign: "left", padding: "12px" }}>Job Seeker ID</th>
                     <th style={{ textAlign: "left", padding: "12px" }}>Name</th>
                     <th style={{ textAlign: "left", padding: "12px" }}>Email</th>
-                    <th style={{ textAlign: "left", padding: "12px" }}>Resume</th>
+                    {/* <th style={{ textAlign: "left", padding: "12px" }}>Resume</th> */}
                     <th style={{ textAlign: "left", padding: "12px" }}>Subscription Type</th>
                     <th style={{ textAlign: "left", padding: "12px" }}>Premium Expiry</th>
                     <th style={{ textAlign: "left", padding: "12px" }}>Joined</th>
@@ -181,13 +181,13 @@ function AdminPremiumUsers() {
                           {seeker.firstName || seeker.name || "N/A"} {seeker.lastName || ""}
                         </td>
                         <td style={{ padding: "12px" }}>{seeker.email || "N/A"}</td>
-                        <td style={{ padding: "12px" }}>
+                        {/* <td style={{ padding: "12px" }}>
                           {seeker.resumeFile ? (
                             <a href={seeker.resumeFile} target="_blank" rel="noopener noreferrer" style={{ color: "#667eea", textDecoration: "underline" }}>
                               View Resume
                             </a>
                           ) : "N/A"}
-                        </td>
+                        </td> */}
                         <td style={{ padding: "12px" }}>
                           <span style={{
                             padding: "4px 10px",

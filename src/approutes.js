@@ -58,21 +58,21 @@ export default function AppRoutes() {
 
 
         {/* Job Seeker Routes */}
-        <Route path="jobseeker/profile" element={<ProtectedRoute requiredRole="jobseeker"><JobSeekerProfile /></ProtectedRoute>} />
-        <Route path="jobseeker/dashboard" element={<ProtectedRoute requiredRole="jobseeker"><JobSeekerDashboard /></ProtectedRoute>} />
-        <Route path="jobseeker/applications" element={<ProtectedRoute requiredRole="jobseeker"><JobSeekerApplications /></ProtectedRoute>} />
-        <Route path="jobseeker/saved-jobs" element={<ProtectedRoute requiredRole="jobseeker"><SavedJobs /></ProtectedRoute>} />
-        <Route path="apply/:jobId" element={<ProtectedRoute requiredRole="jobseeker"><ApplyJobPage /></ProtectedRoute>} />
+        <Route path="jobseeker/profile" element={<ProtectedRoute requiredRole="JOB_SEEKER"><JobSeekerProfile /></ProtectedRoute>} />
+        <Route path="jobseeker/dashboard" element={<ProtectedRoute requiredRole="JOB_SEEKER"><JobSeekerDashboard /></ProtectedRoute>} />
+        <Route path="jobseeker/applications" element={<ProtectedRoute requiredRole="JOB_SEEKER"><JobSeekerApplications /></ProtectedRoute>} />
+        <Route path="jobseeker/saved-jobs" element={<ProtectedRoute requiredRole="JOB_SEEKER"><SavedJobs /></ProtectedRoute>} />
+        <Route path="apply/:jobId" element={<ProtectedRoute requiredRole="JOB_SEEKER"><ApplyJobPage /></ProtectedRoute>} />
 
         {/* Employer Routes */}
-        <Route path="employer/profile" element={<ProtectedRoute requiredRole="employer"><EmployerCompleteProfile /></ProtectedRoute>} />
-        <Route path="employer/dashboard" element={<ProtectedRoute requiredRole="employer"><EmployerDashboard /></ProtectedRoute>} />
-        <Route path="employer/create-job" element={<ProtectedRoute requiredRole="employer"><EmployerCreateJob /></ProtectedRoute>} />
-        <Route path="employer/jobs" element={<ProtectedRoute requiredRole="employer"><EmployerJobList /></ProtectedRoute>} />
-        <Route path="employer/applicants/:jobId" element={<ProtectedRoute requiredRole="employer"><EmployerViewApplicants /></ProtectedRoute>} />
-        <Route path="employer/pending" element={<ProtectedRoute requiredRole="employer"><EmployerPendingScreen /></ProtectedRoute>} />
-        <Route path="employer/rejected" element={<ProtectedRoute requiredRole="employer"><EmployerRejectedScreen /></ProtectedRoute>} />
-        <Route path="payment/:subscriptionId" element={<ProtectedRoute requiredRole="employer"><PremiumCheckRoute><PaymentPage /></PremiumCheckRoute></ProtectedRoute>} />
+        <Route path="employer/profile" element={<ProtectedRoute requiredRole="EMPLOYER"><EmployerCompleteProfile /></ProtectedRoute>} />
+        <Route path="employer/dashboard" element={<ProtectedRoute requiredRole="EMPLOYER"><EmployerDashboard /></ProtectedRoute>} />
+        <Route path="employer/create-job" element={<ProtectedRoute requiredRole="EMPLOYER"><EmployerCreateJob /></ProtectedRoute>} />
+        <Route path="employer/jobs" element={<ProtectedRoute requiredRole="EMPLOYER"><EmployerJobList /></ProtectedRoute>} />
+        <Route path="employer/applicants/:jobId" element={<ProtectedRoute requiredRole="EMPLOYER"><EmployerViewApplicants /></ProtectedRoute>} />
+        <Route path="employer/pending" element={<ProtectedRoute requiredRole="EMPLOYER"><EmployerPendingScreen /></ProtectedRoute>} />
+        <Route path="employer/rejected" element={<ProtectedRoute requiredRole="EMPLOYER"><EmployerRejectedScreen /></ProtectedRoute>} />
+        <Route path="payment/:subscriptionId" element={<ProtectedRoute requiredRole={["EMPLOYER", "JOB_SEEKER"]}><PremiumCheckRoute><PaymentPage /></PremiumCheckRoute></ProtectedRoute>} />
 
         {/* Admin Routes */}
         <Route path="admin/dashboard" element={<ProtectedRoute requiredRole="ADMIN"><AdminDashboard /></ProtectedRoute>} />

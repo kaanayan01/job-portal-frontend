@@ -178,7 +178,7 @@ export default function PaymentPage() {
         setPaymentId(extractedPaymentId);
 
         setMessage(
-          `✓ Payment created! Transaction ID: ${paymentData.transactionId}`
+          ` Payment created! Transaction ID: ${paymentData.transactionId}`
         );
         setShowConfirmation(true);
       } else {
@@ -196,7 +196,10 @@ export default function PaymentPage() {
 
   const handleConfirmRedirect = () => {
     setShowConfirmation(false);
+    if(reduxUser.userType === 'EMPLOYER'){
     navigate("/employer/dashboard");
+    }
+    else  navigate("/jobs")
   };
 
   const handleCancelRedirect = async () => {
@@ -275,7 +278,7 @@ export default function PaymentPage() {
             }));
           }
 
-          setMessage("✓ Payment processed successfully!");
+          setMessage("Payment processed successfully!");
           // Redirect to appropriate page based on user type after 2 seconds
           setTimeout(() => {
             if (userType === "EMPLOYER") {
@@ -287,7 +290,7 @@ export default function PaymentPage() {
             }
           }, 2000);
         } else {
-          setError("✕ Payment processing failed. Please try again.");
+          setError(" Payment processing failed. Please try again.");
         }
         console.log(`Payment status updated to ${updateStatus}:`, updateData.data);
       } else {
@@ -317,13 +320,13 @@ export default function PaymentPage() {
         {/* Alert Messages */}
         {error && (
           <div className="alert alert-error">
-            <span>✕</span> {error}
+            <span></span> {error}
           </div>
         )}
 
         {message && (
           <div className="alert alert-success">
-            <span>✓</span> {message}
+            <span></span> {message}
           </div>
         )}
 
@@ -410,7 +413,7 @@ export default function PaymentPage() {
           <div className="modal-overlay">
             <div className="confirmation-modal">
               <div className="modal-header">
-                <h2>✓ Payment Gateway</h2>
+                <h2> Payment Gateway</h2>
               </div>
 
               <div className="modal-body">
@@ -441,7 +444,8 @@ export default function PaymentPage() {
               <div className="modal-footer">
                 <button
                   className="modal-btn modal-primary"
-                  onClick={handleConfirmRedirect}
+                  onClick={handleConfirmRedirect }
+
                 >
                   Go to Dashboard
                 </button>

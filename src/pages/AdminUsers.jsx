@@ -143,7 +143,7 @@ function AdminUsers() {
                     <th style={{ textAlign: "left", padding: "12px" }}>Name</th>
                     <th style={{ textAlign: "left", padding: "12px" }}>Email</th>
                     <th style={{ textAlign: "left", padding: "12px" }}>Subscription Type</th>
-                    <th style={{ textAlign: "left", padding: "12px" }}>Resume</th>
+                    {/* <th style={{ textAlign: "left", padding: "12px" }}>Resume</th> */}
                     <th style={{ textAlign: "left", padding: "12px" }}>Joined</th>
                   </tr>
                 </thead>
@@ -168,13 +168,13 @@ function AdminUsers() {
                             {seeker.subscriptionType || "FREE"}
                           </span>
                         </td>
-                        <td style={{ padding: "12px" }}>
+                        {/* <td style={{ padding: "12px" }}>
                           {seeker.resumeFile ? (
                             <a href={seeker.resumeFile} target="_blank" rel="noopener noreferrer" style={{ color: "#667eea", textDecoration: "underline" }}>
                               View Resume
                             </a>
                           ) : "N/A"}
-                        </td>
+                        </td> */}
                         <td style={{ padding: "12px", fontSize: "0.9rem", color: "#666" }}>
                           {seeker.createdAt ? new Date(seeker.createdAt).toLocaleDateString() : "N/A"}
                         </td>

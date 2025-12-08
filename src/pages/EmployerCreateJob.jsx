@@ -154,7 +154,7 @@ function EmployerCreateJob({ setCurrentPage }) {
           <div className="job-limit-info">
             <p>📊 Jobs Posted: <strong>{jobCount}/5</strong></p>
             {!canPostMore && (
-              <p className="limit-warning">You have reached your job posting limit. <a href="/employer/upgrade">Upgrade to Premium</a> to post more jobs.</p>
+              <p className="limit-warning">You have reached your job posting limit.Upgrade to Premium to post more jobs.</p>
             )}
           </div>
         )}
@@ -239,7 +239,7 @@ function EmployerCreateJob({ setCurrentPage }) {
           </div>
 
           {/* Status */}
-          <div className="form-group">
+          {/* <div className="form-group">
             <label htmlFor="status">Status *</label>
             <select 
               id="status"
@@ -252,7 +252,7 @@ function EmployerCreateJob({ setCurrentPage }) {
               <option value="INACTIVE">Inactive</option>
               <option value="DELETED">Deleted</option>
             </select>
-          </div>
+          </div> */}
 
           {/* Description */}
           <div className="form-group full-width">
@@ -271,12 +271,13 @@ function EmployerCreateJob({ setCurrentPage }) {
 
           {/* Requirements */}
           <div className="form-group full-width">
-            <label htmlFor="requirements">Requirements</label>
+            <label htmlFor="requirements">Requirements *</label>
             <textarea 
               id="requirements"
               name="requirements"
-              placeholder="List required skills and qualifications (comma-separated or one per line)&#10;e.g., Java, Spring Boot, SQL, 5+ years experience"
+              placeholder="List required skills (comma-separated)&#10;e.g., Java, Spring Boot, SQL"
               value={job.requirements}
+              required
               onChange={handleChange}
               className="form-textarea"
               rows={4}

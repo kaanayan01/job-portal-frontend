@@ -634,7 +634,7 @@ function EmployerViewApplicants() {
                             e.target.style.boxShadow = "none";
                           }}
                         >
-                          👁️ View Resume
+                           View Resume
                         </button>
                       </div>
                     </div>

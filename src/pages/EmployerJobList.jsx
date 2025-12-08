@@ -196,11 +196,11 @@ function EmployerJobList() {
                         {job.status || 'ACTIVE'}
                       </span>
                     </div>
-                    <div>
+                    {/* <div>
                       <span style={{ fontWeight: "600", color: "#333" }}>Applicants:</span>
                       <br />
                       <span>{job.applicantCount || 0}</span>
-                    </div>
+                    </div> */}
                     <div>
                       <span style={{ fontWeight: "600", color: "#333" }}>Posted:</span>
                       <br />

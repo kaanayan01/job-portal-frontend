@@ -366,7 +366,7 @@ function JobSeekerProfile({user, setCurrentPage}) {
             </div>
 
             <div className="form-row">
-              <label className="form-label">Resume (optional)</label>
+              <label className="form-label">Resume </label>
               <input 
                 className="form-input" 
                 type="file" 

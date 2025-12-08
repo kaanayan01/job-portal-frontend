@@ -243,7 +243,7 @@ function AdminJobs() {
                     </td>
                     <td style={{ padding: "12px", textAlign: "center" }}>
                       <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-                        <button
+                        {/* <button
                           onClick={() => navigate(`/admin/applications?jobId=${job.jobId}`)}
                           style={{
                             padding: "6px 12px",
@@ -257,7 +257,7 @@ function AdminJobs() {
                           }}
                         >
                           View Applications
-                        </button>
+                        </button> */}
                         {(job.status || job.jobStatus)?.toUpperCase() === "ACTIVE" ? (
                           <button
                             onClick={() => handleStatusUpdate(job.jobId, "INACTIVE")}
